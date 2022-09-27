@@ -72,7 +72,7 @@ for ((cache=0; cache<1;cache++)); do
 		num_partitions=$((2**i))
 		echo ">> cache=${cache}, num_partitions=${num_partitions}"
 		hadoop fs -rm -r -f ${NAMENODE_DIR}/output_${DATA}_${cache}_${num_partitions}
-		../../../spark-3.3.0-bin-hadoop3/bin/spark-submit --master spark://10.10.1.1:7077 --class "PageRank" task_2_3.py ${NAMENODE_DIR}/${DATA_PATH} ${NAMENODE_DIR}/output_${DATA}_${cache}_${num_partitions} 10 $num_partitions $cache
+		../../../spark-3.3.0-bin-hadoop3/bin/spark-submit --master spark://10.10.1.1:7077 --class "PageRank" tasks.py ${NAMENODE_DIR}/${DATA_PATH} ${NAMENODE_DIR}/output_${DATA}_${cache}_${num_partitions} 10 $num_partitions $cache
 	done
 done
 
