@@ -9,6 +9,7 @@ hadoop fs -mkdir hdfs://10.10.1.1:9000/users/${USER_NAME}/part2
 hdfs dfs -cat hdfs://10.10.1.1:9000/users/${USER_NAME}/part2/export.csv
 
 # download csv
+rm export.csv*
 wget http://pages.cs.wisc.edu/~shivaram/cs744-fa18/assets/export.csv
 
 # Add local input file (export.csv) to hdfs
