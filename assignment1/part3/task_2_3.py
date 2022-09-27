@@ -45,7 +45,7 @@ def parse_neighbors(pages):
     return neighbors[0], neighbors[1]
 
 def page_rank(input_path, output_path, num_iters, num_partitions, cache):
-    logger = Logger("log_{}_{}.txt".format(num_partitions, cache))
+    logger = Logger("log/log_{}_{}.txt".format(num_partitions, cache))
 
     start_time = time.time()
     spark = SparkSession \
@@ -53,12 +53,12 @@ def page_rank(input_path, output_path, num_iters, num_partitions, cache):
             .appName("PageRank") \
             .getOrCreate()
     t0 = time.time()
-    logger.print("  >> spark session initialized")
+    #logger.print("  >> spark session initialized")
 
     # load input files
     lines = spark.read.text(sys.argv[1]).rdd.map(lambda r: r[0])
     t1 = time.time()
-    logger.print("  >> lines loaded: {}".format(lines))
+    #logger.print("  >> lines loaded: {}".format(lines))
 
     # read pages in input files and initialize their neighbors
     links = lines.map(lambda urls: parse_neighbors(urls)).distinct().groupByKey()
@@ -66,12 +66,12 @@ def page_rank(input_path, output_path, num_iters, num_partitions, cache):
         links = links.cache()
 
     t2 = time.time()
-    logger.print("  >> links parsed: {}".format(links))
+    #logger.print("  >> links parsed: {}".format(links))
 
     # partition links
     if num_partitions > 1:
         links = links.repartition(num_partitions)
-    logger.print("  >> links repartition: {}".format(links))
+    #logger.print("  >> links repartition: {}".format(links))
     t3 = time.time()
 
     # initialize ranks
@@ -79,7 +79,7 @@ def page_rank(input_path, output_path, num_iters, num_partitions, cache):
     if num_partitions > 1:
         ranks = ranks.repartition(num_partitions)
     t4 = time.time()
-    logger.print("  >> ranks initialized: {}".format(ranks))
+    #logger.print("  >> ranks initialized: {}".format(ranks))
 
     # calculate and update ranks using PageRank algorithm
     for iteration in range(num_iters):
@@ -99,11 +99,11 @@ def page_rank(input_path, output_path, num_iters, num_partitions, cache):
     spark.stop()
 
     #logger.print("==================== result =======================")
-    logger.print("input_path       = {}".format(input_path))
-    logger.print("output_path      = {}".format(output_path))
-    logger.print("num_iters        = {}".format(num_iters))
-    logger.print("num_partitions   = {}".format(num_partitions))
-    logger.print("cache            = {}".foramt(cache))
+    logger.print("input_path {}".format(input_path))
+    logger.print("output_path {}".format(output_path))
+    logger.print("num_iters {}".format(num_iters))
+    logger.print("num_partitions {}".format(num_partitions))
+    logger.print("cache {}".format(cache))
     #logger.print("---------------------------------------------------")
     logger.print("total {:.4f}".format(time.time()-start_time))
     logger.print("spark_session_init {:.4f}".format(t0-start_time))
@@ -113,7 +113,7 @@ def page_rank(input_path, output_path, num_iters, num_partitions, cache):
     logger.print("ranks_init {:.4f}".format(t4-t3))
     logger.print("ranks_updated {:.4f}".format(t5-t4))
     logger.print("output_saved {:.4f}".format(t6-t5))
-    #logger.print("===================================================")
+    #print("===================================================")
 
 if __name__ == "__main__":
     if len(sys.argv) < 5:
