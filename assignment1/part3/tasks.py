@@ -10,6 +10,7 @@ from pyspark.sql import SparkSession
 
 import time
 
+# code reference: https://github.com/apache/spark/blob/master/examples/src/main/python/pagerank.py
 
 class Logger():
     def __init__(self, save_path):
@@ -98,13 +99,11 @@ def page_rank(input_path, output_path, num_iters, num_partitions, cache):
     t6 = time.time()
     spark.stop()
 
-    #logger.print("==================== result =======================")
     logger.print("input_path {}".format(input_path))
     logger.print("output_path {}".format(output_path))
     logger.print("num_iters {}".format(num_iters))
     logger.print("num_partitions {}".format(num_partitions))
     logger.print("cache {}".format(cache))
-    #logger.print("---------------------------------------------------")
     logger.print("total {:.4f}".format(time.time()-start_time))
     logger.print("spark_session_init {:.4f}".format(t0-start_time))
     logger.print("lines_read {:.4f}".format(t1-t0))
@@ -113,7 +112,6 @@ def page_rank(input_path, output_path, num_iters, num_partitions, cache):
     logger.print("ranks_init {:.4f}".format(t4-t3))
     logger.print("ranks_updated {:.4f}".format(t5-t4))
     logger.print("output_saved {:.4f}".format(t6-t5))
-    #print("===================================================")
 
 if __name__ == "__main__":
     if len(sys.argv) < 5:

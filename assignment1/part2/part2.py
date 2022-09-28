@@ -1,6 +1,8 @@
 from pyspark.sql import SparkSession
 import sys
 
+# code reference: https://github.com/apache/spark/blob/master/examples/src/main/python/pagerank.py
+
 def simple_spark_app(input_path, output_path):
     # initialize spark sql instance
     print("STARTING-----------------------------------------------------")
