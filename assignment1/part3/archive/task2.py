@@ -7,6 +7,7 @@ from pyspark.resultiterable import ResultIterable
 from pyspark.sql import SparkSession
 
 import time
+from ..utils import Logger
 
 def compute_contribs(urls: ResultIterable[str], rank: float) -> Iterable[Tuple[str, float]]:
     num_urls = len(urls)
