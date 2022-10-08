@@ -219,14 +219,14 @@ def main():
                 dist.gather(tensor, gather_list=gathered_grads)
             else:
                 # gather from other nodes
-                gather(tensor=grad, rank=rank, tensor_list=grad_list)
+                gather(tensor=grad, rank=rank, tensor_list=gathered_grads)
 
             # GATHER: compute average gradient
             if rank == 0:
                 grad_sum = torch.zeros_like(grad)
-                for group_idx in range(len(grad_list)):
-                    grad_sum = torch.add(grad_sum, grad_list[group_idx])
-                grad_mean = torch.divide(grad_sum, len(grad_list))
+                for group_idx in range(len(gathered_grads)):
+                    grad_sum = torch.add(grad_sum, gathered_grads[group_idx])
+                grad_mean = torch.divide(grad_sum, len(gathered_grads))
             else:
                 grad_mean = torch.zeros_like(grad)
         
