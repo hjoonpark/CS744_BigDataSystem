@@ -88,7 +88,7 @@ def test_model(model, test_loader, criterion):
 
 def main():
     parser = argparse.ArgumentParser(description='Distributed PyTorch Training')
-    parser.add_argument('--master-ip', default='10.0.0.1', type=str, metavar='N',help='manual ip number', dest='master_ip')
+    parser.add_argument('--master-ip', default='10.10.1.1', type=str, metavar='N',help='manual ip number', dest='master_ip')
     parser.add_argument('--num-nodes', default=4, type=int, help='number of nodes for distributed training', dest='num_nodes')
     parser.add_argument('--rank', default=0, type=int, help='node rank for distributed training')
     args = parser.parse_args()
