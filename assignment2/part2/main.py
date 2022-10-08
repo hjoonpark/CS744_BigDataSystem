@@ -179,7 +179,8 @@ def main():
                     avg_grad = torch.divide(avg_grad, group_size)
 
                     # Scatters a list of tensors to all processes in a group: scatter back to nodes
-                    dist.scatter(avg_grad, group=group)
+                    scatter_list = [avg_grad] * group_size
+                    dist.scatter(params.grad, scatter_list, src=0, group=group, async_op=False)
             else:
                 # current node is one of the workers
                 # The worker node first sends its gradient to the root node, and then receives the averaged gradient calculated by the root node.
