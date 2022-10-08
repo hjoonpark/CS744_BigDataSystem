@@ -75,11 +75,13 @@ def test_model(model, test_loader, criterion):
 
 def main():
     args = parser.parse_args()
+    print("args: {}".format(args))
     ## INIT DIST ##
     ip = 'tcp://' + args.master_ip + ':6568'
     dist.init_process_group('gloo', init_method=ip, rank=args.rank, world_size=args.num_nodes)
     ## END INIT ##
 
+    
     normalize = transforms.Normalize(mean=[x/255.0 for x in [125.3, 123.0, 113.9]],
                                 std=[x/255.0 for x in [63.0, 62.1, 66.7]])
     transform_train = transforms.Compose([
