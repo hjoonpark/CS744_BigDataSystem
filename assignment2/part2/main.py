@@ -94,6 +94,7 @@ def main():
     args = parser.parse_args()
     print("args: {}".format(args))
 
+    rank = args.rank
     """
     torch.distributed.init_process_group() parameters
     - backend: 
@@ -131,7 +132,7 @@ def main():
     test_loader = torch.utils.data.DataLoader(test_set, num_workers=2, batch_size=batch_size, shuffle=False, pin_memory=True)
 
     print("train_set: {}, test_set: {}".format(len(train_set), len(test_set)))
-    training_criterion = torch.nn.CrossEntropyLoss().to(device)
+    criterion = torch.nn.CrossEntropyLoss().to(device)
 
     model = mdl.VGG11()
     model.to(device)
@@ -166,7 +167,7 @@ def main():
                 # current node is root
                 for params in model.parameters():
                     # list to hold gradient from each of the nodes
-                    grads_from_nodes = [torch.zeros_like(grad) for _ in range(group_size)]
+                    grads_from_nodes = [torch.zeros_like(params.grad) for _ in range(group_size)]
 
                     # Gathers a list of tensors in a single process: gather gradients from other nodes
                     dist.gather(params.grad, gather_list=grads_from_nodes, group=group)
