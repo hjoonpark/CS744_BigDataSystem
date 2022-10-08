@@ -150,6 +150,7 @@ def main():
         print(">> epoch {}".format(epoch))
         # each batch is divided into processors (nodes), and averaged gradient sent back to each node for respective back-propagation
         # we first send the gradients of the 3 nodes to the root node, average them, and then send them to the 3 nodes respectively.
+        running_loss = 0
         for batch_idx, (data, target) in enumerate(train_loader):
             # zero the parameter gradients
             optimizer.zero_grad()
