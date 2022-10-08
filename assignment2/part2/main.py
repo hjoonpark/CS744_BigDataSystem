@@ -3,7 +3,7 @@ import torch
 import json
 import copy
 import numpy as np
-import argparse
+import argparsoe
 from torchvision import datasets, transforms
 import torch.nn as nn
 import torch.nn.functional as F
@@ -91,7 +91,7 @@ def main():
     parser.add_argument('--master-ip', default='10.0.0.1', type=str, metavar='N',help='manual ip number', dest='master_ip')
     parser.add_argument('--num-nodes', default=4, type=int, help='number of nodes for distributed training', dest='num_nodes')
     parser.add_argument('--rank', default=0, type=int, help='node rank for distributed training')
-    args = parser.parse_ags()
+    args = parser.parse_args()
 
     """
     torch.distributed.init_process_group() parameters
