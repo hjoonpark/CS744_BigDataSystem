@@ -18,6 +18,9 @@ ssh node1 mkdir -p ${ROOT_DIR}/output
 ssh node2 mkdir -p ${ROOT_DIR}/output
 ssh node3 mkdir -p ${ROOT_DIR}/output
 
+# use python from conda
+PYTHON_DIR="/users/hpark376/miniconda3/bin/"
+
 # run script for each node
 # root node: 0
 echo "running for root node"
@@ -27,12 +30,14 @@ echo "running for root node"
 CMD_PATH="export PATH=\"/users/hpark376/miniconda3/bin:\$PATH\""
 # nodes: 1, 2, 3
 for NODE_IDX in 1 2 3; do
+    echo "=================================================== "
     echo "  - running for node ${NODE_IDX}"
 
     # needs to set path for conda
-    ssh node$NODE_IDX "$CMD_PATH;"
+    ssh node$NODE_IDX "$CMD_PATH; echo \"PATH=$PATH\";"
+    
     touch ${ROOT_DIR}/output/log_rank${NODE_IDX}.txt
-    ssh node$NODE_IDX "python ${ROOT_DIR}/main.py --master-ip $MASTER_IP --num-nodes $NUM_NODES --rank $NODE_IDX >> ${ROOT_DIR}/output/log_rank${NODE_IDX}.txt"
+    ssh node$NODE_IDX "${PYTHON_DIR}/python ${ROOT_DIR}/main.py --master-ip $MASTER_IP --num-nodes $NUM_NODES --rank $NODE_IDX >> ${ROOT_DIR}/output/log_rank${NODE_IDX}.txt"
 done
 
 echo "==== DONE ===="
