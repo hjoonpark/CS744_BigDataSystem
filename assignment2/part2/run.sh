@@ -24,12 +24,13 @@ PYTHON_DIR="/users/hpark376/miniconda3/bin/"
 # run script for each node
 # root node: 0
 echo "running for root node"
-#python ${ROOT_DIR}/main.py --master-ip $MASTER_IP --num-nodes $NUM_NODES --rank 0 >> ${ROOT_DIR}/output/log_rank0.txt
+python ${ROOT_DIR}/main.py --master-ip $MASTER_IP --num-nodes $NUM_NODES --rank 0 >> ${ROOT_DIR}/output/log_rank0.txt
 
 # needs to set path for conda in each node
 CMD_PATH="export PATH=\"/users/hpark376/miniconda3/bin:\$PATH\""
 # nodes: 1, 2, 3
 for NODE_IDX in 1 2 3; do
+	#break;
     echo "=================================================== "
     echo "  - running for node ${NODE_IDX}"
 

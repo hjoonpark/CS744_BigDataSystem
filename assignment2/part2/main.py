@@ -92,6 +92,7 @@ def main():
     parser.add_argument('--num-nodes', default=4, type=int, help='number of nodes for distributed training', dest='num_nodes')
     parser.add_argument('--rank', default=0, type=int, help='node rank for distributed training')
     args = parser.parse_args()
+    print("args: {}".format(args))
 
     """
     torch.distributed.init_process_group() parameters
@@ -103,9 +104,9 @@ def main():
     - world_size: Number of processes participating in the job
     - rank: Rank of the current process (it should be a number between 0 and world_size-1)
     """
-    init_method = "tcp://{}:6566".format(args.master_ip)
-    dist.init_process_group(backend="gloo", init_method=init_method, world_size=args.num_nodes, rank=args.rank)
+    init_method = "tcp://{}:6666".format(args.master_ip)
     print("init_method: {}".format(init_method))
+    dist.init_process_group(backend="gloo", init_method=init_method, world_size=args.num_nodes, rank=args.rank)
 
     # preprocessing dataset
     normalize = transforms.Normalize(mean=[x/255.0 for x in [125.3, 123.0, 113.9]],
@@ -122,13 +123,14 @@ def main():
             normalize])
     
     # load train set
-    training_set = datasets.CIFAR10(root="./data", train=True, download=True, transform=transform_train)
-    train_loader = torch.utils.data.DataLoader(training_set, num_workers=2, batch_size=batch_size, sampler=None, shuffle=True, pin_memory=True)
+    train_set = datasets.CIFAR10(root="./data", train=True, download=True, transform=transform_train)
+    train_loader = torch.utils.data.DataLoader(train_set, num_workers=2, batch_size=batch_size, sampler=None, shuffle=True, pin_memory=True)
 
     # load test set
     test_set = datasets.CIFAR10(root="./data", train=False, download=True, transform=transform_test)
     test_loader = torch.utils.data.DataLoader(test_set, num_workers=2, batch_size=batch_size, shuffle=False, pin_memory=True)
 
+    print("train_set: {}, test_set: {}".format(len(train_set), len(test_set)))
     training_criterion = torch.nn.CrossEntropyLoss().to(device)
 
     model = mdl.VGG11()
@@ -144,6 +146,7 @@ def main():
 
     # running training for one epoch
     for epoch in range(1):
+        print(">> epoch {}".format(epoch))
         # each batch is divided into processors (nodes), and averaged gradient sent back to each node for respective back-propagation
         # we first send the gradients of the 3 nodes to the root node, average them, and then send them to the 3 nodes respectively.
         for batch_idx, (data, target) in enumerate(train_loader):
