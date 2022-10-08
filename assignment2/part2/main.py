@@ -98,7 +98,7 @@ def main():
         - "gloo": Gloo (for CPU)
         - "nccl": NCCL (for GPU)
         - "mpi": for some special cases?
-    - init_method: URL specifying how to initialize the process group. Default is “env://”
+    - init_method: URL specifying how to initialize the process group. Default is "env://"
     - world_size: Number of processes participating in the job
     - rank: Rank of the current process (it should be a number between 0 and world_size-1)
     """
