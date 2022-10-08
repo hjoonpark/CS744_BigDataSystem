@@ -197,8 +197,8 @@ def main():
                 print('rank:', rank, "epoch:", epoch, 'batch num:', batch_idx, 'loss:', running_loss/20)
                 running_loss = 0.0
                 
-        gradients = train_model(model, train_loader, optimizer, training_criterion, epoch)
-        test_model(model, test_loader, training_criterion)
+        gradients = train_model(model, train_loader, optimizer, criterion, epoch)
+        test_model(model, test_loader, criterion)
 
         # for each gradient of model parameters
         gradients_new = []
@@ -238,7 +238,7 @@ def main():
     # train is over
 
     # test
-    # test_models(model, test_loader, training_criterion)
+    test_models(model, test_loader, criterion)
 
 def gather(tensor, rank, tensor_list=None, root=0, group=None):
     """
