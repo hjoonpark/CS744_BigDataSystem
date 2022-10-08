@@ -216,7 +216,7 @@ def main():
             """
             if rank == 0:
                 # current device is the root node, so gather from other nodes
-                dist.gather(tensor, gather_list=gathered_grads)
+                dist.gather(tensor=grad, gather_list=gathered_grads)
             else:
                 # gather from other nodes
                 gather(tensor=grad, rank=rank, tensor_list=gathered_grads)
