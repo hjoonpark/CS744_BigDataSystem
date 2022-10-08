@@ -23,9 +23,14 @@ ssh node3 mkdir -p ${ROOT_DIR}/output
 echo "running for root node"
 #python ${ROOT_DIR}/main.py --master-ip $MASTER_IP --num-nodes $NUM_NODES --rank 0 >> ${ROOT_DIR}/output/log_rank0.txt
 
+# needs to set path for conda in each node
+CMD_PATH="export PATH=\"/users/hpark376/miniconda3/bin:\$PATH\""
 # nodes: 1, 2, 3
 for NODE_IDX in 1 2 3; do
     echo "  - running for node ${NODE_IDX}"
+
+    # needs to set path for conda
+    ssh node$NODE_IDX "$CMD_PATH;"
     touch ${ROOT_DIR}/output/log_rank${NODE_IDX}.txt
     ssh node$NODE_IDX "python ${ROOT_DIR}/main.py --master-ip $MASTER_IP --num-nodes $NUM_NODES --rank $NODE_IDX >> ${ROOT_DIR}/output/log_rank${NODE_IDX}.txt"
 done
