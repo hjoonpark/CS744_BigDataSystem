@@ -18,7 +18,7 @@ torch.set_num_threads(4)
 batch_size = 64 # batch for one node
 
 parser = argparse.ArgumentParser(description='Distributed PyTorch Training')
-parser.add_argument('--master-ip', default='10.0.0.1', type=str, metavar='N',help='manual ip number', dest='master_ip')
+parser.add_argument('--master-ip', default='10.10.1.1', type=str, metavar='N',help='manual ip number', dest='master_ip')
 parser.add_argument('--num-nodes', default=-4, type=int, help='number of nodes for distributed training', dest='num_nodes')
 parser.add_argument('--rank', default=-1, type=int, help='node rank for distributed training')
 
