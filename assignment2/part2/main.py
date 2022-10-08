@@ -147,7 +147,6 @@ def main():
 
     # running training for one epoch
     for epoch in range(1):
-        print(">> epoch {}".format(epoch))
         # each batch is divided into processors (nodes), and averaged gradient sent back to each node for respective back-propagation
         # we first send the gradients of the 3 nodes to the root node, average them, and then send them to the 3 nodes respectively.
         running_loss = 0
@@ -163,7 +162,6 @@ def main():
             loss.backward() 
 
             # average gradients across nodes if current node is not root (rank=0)
-            print("epoch {} | rank={}, group={}".format(epoch, rank, group))
             if rank == 0:
                 # current node is root
                 for params in model.parameters():
@@ -196,7 +194,7 @@ def main():
 
             running_loss += loss.item()
             if batch_idx % 20 == 19:    # print every 20 mini-batches
-                print('epoch:', epoch, 'batch num:', batch_idx, 'loss:', running_loss/20)
+                print('rank:', rank, "epoch:", epoch, 'batch num:', batch_idx, 'loss:', running_loss/20)
                 running_loss = 0.0
                 
         gradients = train_model(model, train_loader, optimizer, training_criterion, epoch)
