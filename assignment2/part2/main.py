@@ -104,7 +104,7 @@ def main():
     - rank: Rank of the current process (it should be a number between 0 and world_size-1)
     """
     init_method = "tcp://{}:6566".format(args.master_ip)
-    dist.init_process_group(backend="gloo", init_method=init_method, world_size=arg.num_nodes, rank=args.rank)
+    dist.init_process_group(backend="gloo", init_method=init_method, world_size=args.num_nodes, rank=args.rank)
     print("init_method: {}".format(init_method))
 
     # preprocessing dataset
