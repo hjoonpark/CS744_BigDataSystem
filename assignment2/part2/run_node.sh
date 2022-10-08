@@ -19,6 +19,6 @@ PYTHON_DIR="/users/hpark376/miniconda3/bin/"
 
 # run script for current node
 echo "running for root node: ${RANK}"
-python ${ROOT_DIR}/main.py --master-ip $MASTER_IP --num-nodes $NUM_NODES --rank ${RANK} >> ${ROOT_DIR}/output/log_rank${RANK}.txt
+python ${ROOT_DIR}/main.py --master-ip $MASTER_IP --num-nodes $NUM_NODES --rank ${RANK} #>> ${ROOT_DIR}/output/log_rank${RANK}.txt
 
 echo "==== DONE ===="
