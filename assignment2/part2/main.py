@@ -170,7 +170,7 @@ def main():
                     grads_from_nodes = [torch.zeros_like(params.grad) for _ in range(group_size)]
 
                     # Gathers a list of tensors in a single process: gather gradients from other nodes
-                    dist.gather(params.grad, gather_list=grads_from_nodes, group=group)
+                    dist.gather(params.grad, gather_list=grads_from_nodes, group=group, async_op=False)
 
                     # average the gradients
                     avg_grad = torch.zeros_like(params.grad)
@@ -185,9 +185,9 @@ def main():
                 # The worker node first sends its gradient to the root node, and then receives the averaged gradient calculated by the root node.
                 for params in model.parameters():
                     # send gradient to root (rank=0)
-                    dist.gather(params.grad, dst=rank, group=group)
+                    dist.gather(params.grad, group=group, async_op=False)
                     # receive back the gradient from root
-                    dist.scatter(params.grad, src=rank, group=group)
+                    dist.scatter(params.grad, src=0, group=group, async_op=False)
 
             # back-propagate
             optimizer.step()
