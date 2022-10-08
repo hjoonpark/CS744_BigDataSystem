@@ -18,7 +18,7 @@ PYTHON_DIR="/users/hpark376/miniconda3/bin/"
 # CMD_PATH="export PATH=\"/users/hpark376/miniconda3/bin:\$PATH\""
 
 # run script for current node
-echo "running for root node"
-python ${ROOT_DIR}/main.py --master-ip $MASTER_IP --num-nodes $NUM_NODES --rank ${RANK} >> ${ROOT_DIR}/output/log_rank${RANK}.txt
+echo "running for root node: ${RANK}"
+python ${ROOT_DIR}/main.py --master-ip $MASTER_IP --num-nodes $NUM_NODES --rank ${RANK} #>> ${ROOT_DIR}/output/log_rank${RANK}.txt
 
 echo "==== DONE ===="
