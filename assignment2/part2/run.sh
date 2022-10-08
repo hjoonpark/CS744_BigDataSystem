@@ -25,7 +25,7 @@ python main.py --master-ip $MASTER_IP --num-nodes $NUM_NODES --rank 0 >> output/
 # nodes: 1, 2, 3
 for NODE_IDX in "1 2 3"; do
     echo "  - running for node ${NODE_IDX}"
-    python main.py --master-ip $MASTER_IP --num-nodes $NUM_NODES --rank $NODE_IDX >> output/log_rank${NODE_IDX}.txt
+    ssh  python main.py --master-ip $MASTER_IP --num-nodes $NUM_NODES --rank $NODE_IDX >> output/log_rank${NODE_IDX}.txt
 done
 
 echo "==== DONE ===="
