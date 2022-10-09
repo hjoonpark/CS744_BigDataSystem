@@ -231,7 +231,7 @@ def main():
                 grad_mean = torch.zeros_like(grad)
         
             # SCATTER
-            dist.scatter(grad_mean, group=dist.group.WORLD)
+            dist.scatter(grad_mean, src=0, group=dist.group.WORLD)
 
             # append to new gradients
             gradients_new.append(grad_mean)
