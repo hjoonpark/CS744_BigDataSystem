@@ -35,7 +35,7 @@ def test_model(model, test_loader, criterion, logger):
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader)
-    logger.print("Test average={}, accuracy={}/{}={}".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
+    logger.print("Test average={} accuracy={}/{}={}".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
             
 def train_model(model, epoch, input_data, target_data, optimizer, criterion, group, group_size, rank):
     # each batch is divided into processors (nodes), and averaged gradient sent back to each node for respective back-propagation
@@ -69,7 +69,6 @@ def main():
     parser.add_argument('--num-nodes', default=4, type=int, help='number of nodes for distributed training', dest='num_nodes')
     parser.add_argument('--rank', default=0, type=int, help='node rank for distributed training')
     args = parser.parse_args()
-    print("args: {}".format(args))
 
     rank = args.rank
     
@@ -78,7 +77,6 @@ def main():
     os.makedirs(save_dir, exist_ok=True)
     log_path = os.path.join(save_dir, "log_rank{}.txt".format(rank))
     logger = Logger(log_path)
-    print("log_path={}".format(log_path))
 
     """
     torch.distributed.init_process_group() parameters
@@ -91,7 +89,6 @@ def main():
     - rank: Rank of the current process (it should be a number between 0 and world_size-1)
     """
     init_method = "tcp://{}:6666".format(args.master_ip)
-    print("init_method: {}".format(init_method))
     dist.init_process_group(backend="gloo", init_method=init_method, world_size=args.num_nodes, rank=args.rank)
 
     # preprocessing dataset
@@ -116,16 +113,19 @@ def main():
     test_set = datasets.CIFAR10(root="./data", train=False, download=True, transform=transform_test)
     test_loader = torch.utils.data.DataLoader(test_set, num_workers=2, batch_size=batch_size, shuffle=False, pin_memory=True)
 
-    print("train_set: {}, test_set: {}".format(len(train_set), len(test_set)))
     criterion = torch.nn.CrossEntropyLoss().to(device)
 
     model = mdl.VGG11()
     model.to(device)
-    print(model)
-    print("device: {}".format(device))
 
     optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0001)
 
+    logger.print(model)
+    logger.print("init_method={}".format(init_method))
+    logger.print("args={}".format(args))
+    logger.print("device={}".format(device))
+    logger.print("tr={} te={} batch_size={}".format(len(train_set), len(test_set), batch_size))
+    
     # process group
     group = dist.group.WORLD
     group_size = args.num_nodes
@@ -143,13 +143,13 @@ def main():
             n_iter += 1
             running_loss += loss.item()
             if batch_idx % 20 == 19:    # print every 20 mini-batches
-                logger.print("rank={}, epoch={}, batch_idx={}, loss={}".format(rank, epoch, batch_idx, running_loss/20))
+                logger.print("rank={} epoch={} batch_idx={} loss={}".format(rank, epoch, batch_idx, running_loss/20))
                 running_loss = 0.0
 
             if n_iter >= 40:
                 break
     dt = time.time()-t0
-    logger.print("dt={}, n_iter={}".format(dt, n_iter))
+    logger.print("dt={} n_iter={}".format(dt, n_iter))
     # train is over
 
     # test

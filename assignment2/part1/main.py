@@ -27,7 +27,6 @@ def train_model(model, train_loader, optimizer, criterion, epoch):
     criterion (nn.CrossEntropyLoss) : Loss function used to train the network
     epoch (int): Current epoch number
     """
-    running_loss = 0
     # remember to exit the train loop at end of the epoch
     for batch_idx, (data, target) in enumerate(train_loader):
         # zero the parameter gradients
@@ -38,14 +37,9 @@ def train_model(model, train_loader, optimizer, criterion, epoch):
         outputs = model(data)
         loss = criterion(outputs, target)
         loss.backward()
-        optimizer.step()
         # ==================================================================================== #
-
-        running_loss += loss.item()
-        if batch_idx % 20 == 19:    # print every 20 mini-batches
-            print('epoch:', epoch, 'batch num:', batch_idx, 'loss:', running_loss/20)
-            running_loss = 0.0
-    return None
+        optimizer.step()
+    return loss
 
 def test_model(model, test_loader, criterion):
     model.eval()
@@ -60,9 +54,7 @@ def test_model(model, test_loader, criterion):
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader)
-    print('Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-            test_loss, correct, len(test_loader.dataset),
-            100. * correct / len(test_loader.dataset)))
+    logger.print("Test average={} accuracy={}/{}={}".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
 
 def main():
     # python main.py --master-ip $ip_address$ --num-nodes 4 --rank $rank$
@@ -71,7 +63,6 @@ def main():
     parser.add_argument('--num-nodes', default=4, type=int, help='number of nodes for distributed training', dest='num_nodes')
     parser.add_argument('--rank', default=0, type=int, help='node rank for distributed training')
     args = parser.parse_args()
-    print("args: {}".format(args))
 
     rank = args.rank
     
@@ -80,7 +71,6 @@ def main():
     os.makedirs(save_dir, exist_ok=True)
     log_path = os.path.join(save_dir, "log_rank{}.txt".format(rank))
     logger = Logger(log_path)
-    print("log_path={}".format(log_path))
     
     normalize = transforms.Normalize(mean=[x/255.0 for x in [125.3, 123.0, 113.9]],
                                 std=[x/255.0 for x in [63.0, 62.1, 66.7]])
@@ -103,11 +93,15 @@ def main():
 
     model = mdl.VGG11()
     model.to(device)
-    print(model)
-    print("device: {}".format(device))
 
     optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0001)
 
+    logger.print(model)
+    logger.print("init_method={}".format(init_method))
+    logger.print("args={}".format(args))
+    logger.print("device={}".format(device))
+    logger.print("tr={} te={} batch_size={}".format(len(train_set), len(test_set), batch_size))
+    
     # process group
     group = dist.group.WORLD
     group_size = args.num_nodes
@@ -126,13 +120,13 @@ def main():
             n_iter += 1
             running_loss += loss.item()
             if batch_idx % 20 == 19:    # print every 20 mini-batches
-                logger.print("rank={}, epoch={}, batch_idx={}, loss={}".format(rank, epoch, batch_idx, running_loss/20))
+                logger.print("rank={} epoch={} batch_idx={} loss={}".format(rank, epoch, batch_idx, running_loss/20))
                 running_loss = 0.0
 
             if n_iter >= 40:
                 break
     dt = time.time()-t0
-    logger.print("dt={}, n_iter={}".format(dt, n_iter))
+    logger.print("dt={} n_iter={}".format(dt, n_iter))
     # train is over
 
     # test
