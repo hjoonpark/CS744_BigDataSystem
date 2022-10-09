@@ -10,10 +10,12 @@ import torch.optim as optim
 import logging
 import random
 import model as mdl
+from ..logger import Logger
+
 device = "cpu"
 torch.set_num_threads(4)
-
 batch_size = 256 # batch for one node
+
 def train_model(model, train_loader, optimizer, criterion, epoch):
     """
     model (torch.nn.module): The model created to train
@@ -59,6 +61,7 @@ def test_model(model, test_loader, criterion):
             
 
 def main():
+
     normalize = transforms.Normalize(mean=[x/255.0 for x in [125.3, 123.0, 113.9]],
                                 std=[x/255.0 for x in [63.0, 62.1, 66.7]])
     transform_train = transforms.Compose([
@@ -86,7 +89,12 @@ def main():
     # running training for one epoch
     for epoch in range(1):
         train_model(model, train_loader, optimizer, training_criterion, epoch)
-        test_model(model, test_loader, training_criterion)
+    test_model(model, test_loader, training_criterion)
 
 if __name__ == "__main__":
+    # [IMPORTANT] set seeds
+    torch.manual_seed(0)
+    random.seed(0)
+    np.random.seed(0)
+
     main()

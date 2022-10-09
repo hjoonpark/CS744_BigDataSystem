@@ -12,13 +12,14 @@ import logging
 import random
 import model as mdl
 import torch.distributed as dist
+from ..logger import Logger
 
 device = "cpu"
 torch.set_num_threads(4)
 
 batch_size = 256 # batch for one node
 
-def test_model(model, test_loader, criterion):
+def test_model(model, test_loader, criterion, logger):
     model.eval()
     test_loss = 0
     correct = 0
@@ -31,10 +32,31 @@ def test_model(model, test_loader, criterion):
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader)
-    print('Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-            test_loss, correct, len(test_loader.dataset),
-            100. * correct / len(test_loader.dataset)))
+    logger.print("Test average={}, accuracy={}/{}={}".foramt(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_load.dataset)))
             
+def train_model(model, input_data, target_data, epoch, optimizer, criterion):
+    # each batch is divided into processors (nodes), and averaged gradient sent back to each node for respective back-propagation
+    # we first send the gradients of the 3 nodes to the root node, average them, and then send them to the 3 nodes respectively.
+    
+    # zero the parameter gradients
+    optimizer.zero_grad()
+
+    # forward + backward + optimize
+    outputs = model(data)
+    loss = criterion(outputs, target)
+    
+    # compute gradient
+    loss.backward() 
+
+    # [TASK B] use allreduce (ring reduce), instead of scatter/gather
+    for params in model.parameters():
+        params.grad = params.grad / group_size
+        dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=group, async_op=False)
+
+    # back-propagate
+    optimizer.step()
+
+    return loss
 
 def main():
     parser = argparse.ArgumentParser(description='Distributed PyTorch Training')
@@ -45,6 +67,11 @@ def main():
     print("args: {}".format(args))
 
     rank = args.rank
+    
+    save_dir = "output"
+    os.makedirs(save_dir, exist_ok=True)
+    logger = Logger(os.path.join(save_dir, "log_rank{}.txt".format(rank)))
+
     """
     torch.distributed.init_process_group() parameters
     - backend: 
@@ -99,37 +126,29 @@ def main():
     group_size = args.num_nodes
 
     # running training for one epoch
+
+    t0 = time.time()
+    n_iter = 0
     for epoch in range(1):
         # each batch is divided into processors (nodes), and averaged gradient sent back to each node for respective back-propagation
         # we first send the gradients of the 3 nodes to the root node, average them, and then send them to the 3 nodes respectively.
         running_loss = 0
-        for batch_idx, (data, target) in enumerate(train_loader):
-            # zero the parameter gradients
-            optimizer.zero_grad()
-
-            # forward + backward + optimize
-            outputs = model(data)
-            loss = criterion(outputs, target)
-            
-            # compute gradient
-            loss.backward() 
-
-            # [TASK B] use allreduce (ring reduce), instead of scatter/gather
-            for params in model.parameters():
-                params.grad = params.grad / group_size
-                dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=group, async_op=False)
-
-            # back-propagate
-            optimizer.step()
-
+        for batch_idx, (input_data, target_data) in enumerate(train_loader):
+            loss = train_model(model, epoch, input_data, target_data, optimizer, criterion)
+            n_iter += 1
             running_loss += loss.item()
             if batch_idx % 20 == 19:    # print every 20 mini-batches
-                print('rank:', rank, "epoch:", epoch, 'batch num:', batch_idx, 'loss:', running_loss/20)
+                logger.print("rank={}, epoch={}, batch_num={}, batch_idx={}, loss={}".format(rank, epoch, batch_num, batch_idx, running_loss/20))
                 running_loss = 0.0
+
+            if n_iter >= 40:
+                break
+    dt = time.time()-t0
+    logger.print("dt={}, n_iter={}".format(dt, n_iter))
     # train is over
 
     # test
-    test_model(model, test_loader, criterion)
+    test_model(model, test_loader, criterion, logger)
 
 if __name__ == "__main__":
     # [IMPORTANT] set seeds

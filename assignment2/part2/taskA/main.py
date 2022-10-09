@@ -152,4 +152,9 @@ def main():
     test_model(model, test_loader, criterion)
 
 if __name__ == "__main__":
+    # [IMPORTANT] set seeds
+    torch.manual_seed(0)
+    random.seed(0)
+    np.random.seed(0)
+    
     main()
