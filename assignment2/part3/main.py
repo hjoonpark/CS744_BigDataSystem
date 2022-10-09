@@ -63,7 +63,7 @@ def train_model(model, epoch, input_data, target_data, optimizer, criterion, gro
     return loss
 
 def main():
-    file_path = os.path.realpath(__file__)
+    file_path = os.path.join(os.path.realpath(__file__), "..")
 
     # python main.py --master-ip $ip_address$ --num-nodes 4 --rank $rank$
     parser = argparse.ArgumentParser(description='Distributed PyTorch Training')
