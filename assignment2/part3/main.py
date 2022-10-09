@@ -12,7 +12,7 @@ import logging
 import random
 import model as mdl
 import torch.distributed as dist
-from ..logger import Logger
+from ...logger import Logger
 
 device = "cpu"
 torch.set_num_threads(4)
@@ -59,6 +59,7 @@ def train_model(model, input_data, target_data, epoch, optimizer, criterion):
     return loss
 
 def main():
+    # python main.py --master-ip $ip_address$ --num-nodes 4 --rank $rank$
     parser = argparse.ArgumentParser(description='Distributed PyTorch Training')
     parser.add_argument('--master-ip', default='10.10.1.1', type=str, metavar='N',help='manual ip number', dest='master_ip')
     parser.add_argument('--num-nodes', default=4, type=int, help='number of nodes for distributed training', dest='num_nodes')
