@@ -29,7 +29,11 @@ class Logger():
     def print(self, msg: str, level=LogLevel.INFO.name):
         timestamp = self.timestamp()
         print("{} {} {}".format(timestamp, level, msg)) # print the message 
-        with open(self.save_path, "a") as log_file:
+        if os.path.exists(self.save_path):
+            open_type = "a"
+        else:
+            open_type = "w+"
+        with open(self.save_path, open_type) as log_file:
             log_file.write('{} {} {}\n'.format(timestamp, level, msg)) # log the message
 
     def format_seconds(self, sec):
