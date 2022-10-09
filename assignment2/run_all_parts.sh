@@ -1,6 +1,5 @@
 #!/bin/bash
-PART=$1 # 1, 2a, 2b, 3
-RANK=$2
+RANK=$1
 echo "RANK=${RANK}"
 
 # ip of the root
@@ -18,9 +17,11 @@ mkdir -p ${ROOT_DIR}/output
 PYTHON_DIR="/users/hpark376/miniconda3/bin/"
 # CMD_PATH="export PATH=\"/users/hpark376/miniconda3/bin:\$PATH\""
 
-# run script for current node
-SCRIPT=${ROOT_DIR}/part${PART}/main.py
-echo "Running part: ${SCRIPT} with rank ${RANK}"
+for PART in ("1", "2a", "2b", "3"); do
+    # run script for current node
+    SCRIPT=${ROOT_DIR}/part${PART}/main.py
+    echo "Running part: ${SCRIPT} with rank ${RANK}"
 python ${SCRIPT} --master-ip $MASTER_IP --num-nodes $NUM_NODES --rank ${RANK} #>> ${ROOT_DIR}/output/log_rank${RANK}.txt
+done
 
 echo "==== DONE ===="
