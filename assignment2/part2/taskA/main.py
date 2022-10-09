@@ -173,7 +173,7 @@ def main():
     # train is over
 
     # test
-    test_model(model, test_loader, criterion)
+    test_model(model, test_loader, criterion, logger)
 
 if __name__ == "__main__":
     # [IMPORTANT] set seeds
