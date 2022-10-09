@@ -38,6 +38,10 @@ def test_model(model, test_loader, criterion, logger):
     logger.print("Test average={}, accuracy={}/{}={}".foramt(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_load.dataset)))
             
 def train_model(model, epoch, input_data, target_data, optimizer, criterion):
+    # process group
+    group = dist.group.WORLD
+    group_size = args.num_nodes
+    
     # each batch is divided into processors (nodes), and averaged gradient sent back to each node for respective back-propagation
     # we first send the gradients of the 3 nodes to the root node, average them, and then send them to the 3 nodes respectively.
     
@@ -127,9 +131,6 @@ def main():
 
     optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0001)
 
-    # process group
-    group = dist.group.WORLD
-    group_size = args.num_nodes
 
     # running training for one epoch
 
