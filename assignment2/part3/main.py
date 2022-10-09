@@ -13,7 +13,7 @@ import random
 import model as mdl
 import torch.distributed as dist
 import sys
-sys.path.insert(0,'..')
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from logger import Logger
 
 device = "cpu"
