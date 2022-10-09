@@ -63,6 +63,8 @@ def train_model(model, epoch, input_data, target_data, optimizer, criterion, gro
     return loss
 
 def main():
+    file_path = os.path.realpath(__file__)
+
     # python main.py --master-ip $ip_address$ --num-nodes 4 --rank $rank$
     parser = argparse.ArgumentParser(description='Distributed PyTorch Training')
     parser.add_argument('--master-ip', default='10.10.1.1', type=str, metavar='N',help='manual ip number', dest='master_ip')
@@ -73,7 +75,7 @@ def main():
 
     rank = args.rank
     
-    save_dir = "output"
+    save_dir = os.path.join(file_path, "output")
     os.makedirs(save_dir, exist_ok=True)
     log_path = os.path.join(save_dir, "log_rank{}.txt".format(rank))
     logger = Logger(log_path)
@@ -127,7 +129,6 @@ def main():
     print("device: {}".format(device))
 
     optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0001)
-
 
     # process group
     group = dist.group.WORLD
