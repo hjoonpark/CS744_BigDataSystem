@@ -96,9 +96,9 @@ def main():
     rank = args.rank
     
     file_path = os.path.abspath(os.path.dirname(__file__))
-    save_dir = os.path.join(file_path, "output")
+    save_dir = os.path.join(file_path, "..", "output")
     os.makedirs(save_dir, exist_ok=True)
-    log_path = os.path.join(save_dir, "log_rank{}.txt".format(rank))
+    log_path = os.path.join(save_dir, "part2a_rank{}.txt".format(rank))
     logger = Logger(log_path)
     
     """
@@ -150,7 +150,7 @@ def main():
     logger.print("args={}".format(args))
     logger.print("device={}".format(device))
     logger.print("tr={} te={} batch_size={}".format(len(train_set), len(test_set), batch_size))
-    
+
     # process group
     group = dist.group.WORLD
     group_size = args.num_nodes
