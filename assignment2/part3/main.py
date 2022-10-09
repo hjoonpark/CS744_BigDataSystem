@@ -12,7 +12,8 @@ import logging
 import random
 import model as mdl
 import torch.distributed as dist
-from ...logger import Logger
+sys.path.insert(0,'..')
+from logger import Logger
 
 device = "cpu"
 torch.set_num_threads(4)
