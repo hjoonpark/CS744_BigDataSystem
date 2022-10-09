@@ -17,6 +17,7 @@ ROOT_DIR="/users/hpark376/CS744_BigDataSystem/assignment2"
 PYTHON_DIR="/users/hpark376/miniconda3/bin/"
 # CMD_PATH="export PATH=\"/users/hpark376/miniconda3/bin:\$PATH\""
 
+# remove output folders in each node
 for PART in 1 2a 2b 3; do
     # run script for current node
     SCRIPT=${ROOT_DIR}/part${PART}/main.py
