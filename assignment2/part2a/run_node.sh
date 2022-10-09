@@ -10,7 +10,7 @@ NUM_NODES=4
 # root node: 0
 cd ~ 
 # worker nodes: 1, 2, 3
-ROOT_DIR="/users/hpark376/CS744_BigDataSystem/assignment2/part2/taskA"
+ROOT_DIR="/users/hpark376/CS744_BigDataSystem/assignment2/part2a"
 mkdir -p ${ROOT_DIR}/output
 
 # use python from conda
