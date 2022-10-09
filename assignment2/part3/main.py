@@ -12,6 +12,7 @@ import logging
 import random
 import model as mdl
 import torch.distributed as dist
+import time
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from logger import Logger
@@ -73,7 +74,9 @@ def main():
     
     save_dir = "output"
     os.makedirs(save_dir, exist_ok=True)
-    logger = Logger(os.path.join(save_dir, "log_rank{}.txt".format(rank)))
+    log_path = os.path.join(save_dir, "log_rank{}.txt".format(rank))
+    logger = Logger(log_path)
+    print("log_path={}".format(log_path))
 
     """
     torch.distributed.init_process_group() parameters
