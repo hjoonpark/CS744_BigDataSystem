@@ -29,58 +29,6 @@ def test_model(model, test_loader, criterion):
             pred = output.max(1, keepdim=True)[1]
             correct += pred.eq(target.view_as(pred)).sum().item()
 
-            break
-    test_loss /= len(test_loader)
-    print('Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-            test_loss, correct, len(test_loader.dataset),
-            100. * correct / len(test_loader.dataset)))
-
-def train_model(model, train_loader, optimizer, criterion, epoch):
-    """
-    model (torch.nn.module): The model created to train
-    train_loader (pytorch data loader): Training data loader
-    optimizer (optimizer.*): A instance of some sort of optimizer, usually SGD
-    criterion (nn.CrossEntropyLoss) : Loss function used to train the network
-    epoch (int): Current epoch number
-    """
-    # collect gradients
-    gradients = []
-
-    running_loss = 0
-    # remember to exit the train loop at end of the epoch
-    for batch_idx, (data, target) in enumerate(train_loader):
-        # zero the parameter gradients
-        optimizer.zero_grad()
-
-        # forward + backward + optimize
-        outputs = model(data)
-        loss = criterion(outputs, target)
-        loss.backward()
-
-        # accumulate gradients
-        for p in model.parameters():
-            gradients.append(p.grad)
-
-        optimizer.step()
-
-        running_loss += loss.item()
-        if batch_idx % 20 == 19:    # print every 20 mini-batches
-            print('epoch:', epoch, 'batch num:', batch_idx, 'loss:', running_loss/20)
-            running_loss = 0.0
-    return gradients
-
-def test_model(model, test_loader, criterion):
-    model.eval()
-    test_loss = 0
-    correct = 0
-    with torch.no_grad():
-        for batch_idx, (data, target) in enumerate(test_loader):
-            data, target = data.to(device), target.to(device)
-            output = model(data)
-            test_loss += criterion(output, target)
-            pred = output.max(1, keepdim=True)[1]
-            correct += pred.eq(target.view_as(pred)).sum().item()
-
     test_loss /= len(test_loader)
     print('Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
             test_loss, correct, len(test_loader.dataset),
@@ -202,19 +150,7 @@ def main():
     # train is over
 
     # test
-    test_models(model, test_loader, criterion)
-
-def gather(tensor, rank, tensor_list=None, root=0, group=None):
-    """
-    sends tensor to root process, which stores it in tensor_list
-    """
-    if group is None:
-        group = dist.group.WORLD
-    
-    if rank == 0:
-        dist.gather(tensor, gather_list=tensor_list, group=group)
-    else:
-        dist.gather(tensor, dst=root, group=group)
+    test_model(model, test_loader, criterion)
 
 if __name__ == "__main__":
     main()
