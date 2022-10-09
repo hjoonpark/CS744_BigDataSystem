@@ -38,7 +38,6 @@ def test_model(model, test_loader, criterion, logger):
     logger.print("Test average={}, accuracy={}/{}={}".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
             
 def train_model(model, epoch, input_data, target_data, optimizer, criterion, group, group_size):
-
     # each batch is divided into processors (nodes), and averaged gradient sent back to each node for respective back-propagation
     # we first send the gradients of the 3 nodes to the root node, average them, and then send them to the 3 nodes respectively.
     
@@ -51,11 +50,6 @@ def train_model(model, epoch, input_data, target_data, optimizer, criterion, gro
     
     # compute gradient
     loss.backward() 
-
-    # [TASK B] use allreduce (ring reduce), instead of scatter/gather
-    for params in model.parameters():
-        params.grad = params.grad / group_size
-        dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=group, async_op=False)
 
     # back-propagate
     optimizer.step()
