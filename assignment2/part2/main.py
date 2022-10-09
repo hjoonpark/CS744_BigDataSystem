@@ -197,6 +197,8 @@ def main():
                 print('rank:', rank, "epoch:", epoch, 'batch num:', batch_idx, 'loss:', running_loss/20)
                 running_loss = 0.0
                 
+            if batch_idx > 1:
+                break
         gradients = train_model(model, train_loader, optimizer, criterion, epoch)
         test_model(model, test_loader, criterion)
 
