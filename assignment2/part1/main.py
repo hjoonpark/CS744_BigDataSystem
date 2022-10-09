@@ -10,7 +10,10 @@ import torch.optim as optim
 import logging
 import random
 import model as mdl
-from ..logger import Logger
+import time
+import sys
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".."))
+from logger import Logger
 
 device = "cpu"
 torch.set_num_threads(4)
@@ -61,6 +64,13 @@ def test_model(model, test_loader, criterion):
             
 
 def main():
+    file_path = os.path.abspath(os.path.dirname(__file__))
+    save_dir = os.path.join(file_path, "output")
+    os.makedirs(save_dir, exist_ok=True)
+    log_path = os.path.join(save_dir, "log_rank{}.txt".format(rank))
+    logger = Logger(log_path)
+    print("log_path={}".format(log_path))
+    
 
     normalize = transforms.Normalize(mean=[x/255.0 for x in [125.3, 123.0, 113.9]],
                                 std=[x/255.0 for x in [63.0, 62.1, 66.7]])

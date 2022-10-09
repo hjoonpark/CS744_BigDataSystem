@@ -70,6 +70,14 @@ def main():
     print("args: {}".format(args))
 
     rank = args.rank
+    
+    file_path = os.path.abspath(os.path.dirname(__file__))
+    save_dir = os.path.join(file_path, "output")
+    os.makedirs(save_dir, exist_ok=True)
+    log_path = os.path.join(save_dir, "log_rank{}.txt".format(rank))
+    logger = Logger(log_path)
+    print("log_path={}".format(log_path))
+
     """
     torch.distributed.init_process_group() parameters
     - backend: 

@@ -12,12 +12,17 @@ import logging
 import random
 import model as mdl
 import torch.distributed as dist
+import time
+import sys
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".."))
+from logger import Logger
 device = "cpu"
 torch.set_num_threads(4)
 
 batch_size = 256 # batch for one node
 
-def test_model(model, test_loader, criterion):
+
+def test_model(model, test_loader, criterion, logger):
     model.eval()
     test_loss = 0
     correct = 0
@@ -30,10 +35,54 @@ def test_model(model, test_loader, criterion):
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader)
-    print('Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-            test_loss, correct, len(test_loader.dataset),
-            100. * correct / len(test_loader.dataset)))
+    logger.print("Test average={}, accuracy={}/{}={}".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
             
+def train_model(model, epoch, input_data, target_data, optimizer, criterion, group, group_size):
+    # each batch is divided into processors (nodes), and averaged gradient sent back to each node for respective back-propagation
+    # we first send the gradients of the 3 nodes to the root node, average them, and then send them to the 3 nodes respectively.
+    
+    # zero the parameter gradients
+    optimizer.zero_grad()
+
+    # forward + backward + optimize
+    outputs = model(input_data)
+    loss = criterion(outputs, target_data)
+    
+    # compute gradient
+    loss.backward()
+
+    # average gradients across nodes if current node is not root (rank=0)
+    if rank == 0:
+        # current node is root
+        for params in model.parameters():
+            # list to hold gradient from each of the nodes
+            grads_from_nodes = [torch.zeros_like(params.grad) for _ in range(group_size)]
+
+            # Gathers a list of tensors in a single process: gather gradients from other nodes
+            dist.gather(params.grad, gather_list=grads_from_nodes, group=group, async_op=False)
+
+            # average the gradients
+            avg_grad = torch.zeros_like(params.grad)
+            for node_idx in range(group_size):
+                avg_grad = torch.add(avg_grad, grads_from_nodes[node_idx])
+            avg_grad = torch.divide(avg_grad, group_size)
+
+            # Scatters a list of tensors to all processes in a group: scatter back to nodes
+            scatter_list = [avg_grad] * group_size
+            dist.scatter(params.grad, scatter_list, src=0, group=group, async_op=False)
+    else:
+        # current node is one of the workers
+        # The worker node first sends its gradient to the root node, and then receives the averaged gradient calculated by the root node.
+        for params in model.parameters():
+            # send gradient to root (rank=0)
+            dist.gather(params.grad, group=group, async_op=False)
+            # receive back the gradient from root
+            dist.scatter(params.grad, src=0, group=group, async_op=False)(params.grad, op=dist.ReduceOp.SUM, group=group, async_op=False)
+
+    # back-propagate
+    optimizer.step()
+
+    return loss
 
 def main():
     parser = argparse.ArgumentParser(description='Distributed PyTorch Training')
@@ -44,6 +93,13 @@ def main():
     print("args: {}".format(args))
 
     rank = args.rank
+    
+    save_dir = os.path.join(file_path, "output")
+    os.makedirs(save_dir, exist_ok=True)
+    log_path = os.path.join(save_dir, "log_rank{}.txt".format(rank))
+    logger = Logger(log_path)
+    print("log_path={}".format(log_path))
+    
     """
     torch.distributed.init_process_group() parameters
     - backend: 
@@ -95,57 +151,25 @@ def main():
     group_size = args.num_nodes
 
     # running training for one epoch
+    t0 = time.time()
+    n_iter = 0
     for epoch in range(1):
         # each batch is divided into processors (nodes), and averaged gradient sent back to each node for respective back-propagation
         # we first send the gradients of the 3 nodes to the root node, average them, and then send them to the 3 nodes respectively.
         running_loss = 0
-        for batch_idx, (data, target) in enumerate(train_loader):
-            # zero the parameter gradients
-            optimizer.zero_grad()
+        for batch_idx, (input_data, target_data) in enumerate(train_loader):
+            loss = train_model(model, epoch, input_data, target_data, optimizer, criterion, group, group_size)
 
-            # forward + backward + optimize
-            outputs = model(data)
-            loss = criterion(outputs, target)
-            
-            # compute gradient
-            loss.backward() 
-
-            # average gradients across nodes if current node is not root (rank=0)
-            if rank == 0:
-                # current node is root
-                for params in model.parameters():
-                    # list to hold gradient from each of the nodes
-                    grads_from_nodes = [torch.zeros_like(params.grad) for _ in range(group_size)]
-
-                    # Gathers a list of tensors in a single process: gather gradients from other nodes
-                    dist.gather(params.grad, gather_list=grads_from_nodes, group=group, async_op=False)
-
-                    # average the gradients
-                    avg_grad = torch.zeros_like(params.grad)
-                    for node_idx in range(group_size):
-                        avg_grad = torch.add(avg_grad, grads_from_nodes[node_idx])
-                    avg_grad = torch.divide(avg_grad, group_size)
-
-                    # Scatters a list of tensors to all processes in a group: scatter back to nodes
-                    scatter_list = [avg_grad] * group_size
-                    dist.scatter(params.grad, scatter_list, src=0, group=group, async_op=False)
-            else:
-                # current node is one of the workers
-                # The worker node first sends its gradient to the root node, and then receives the averaged gradient calculated by the root node.
-                for params in model.parameters():
-                    # send gradient to root (rank=0)
-                    dist.gather(params.grad, group=group, async_op=False)
-                    # receive back the gradient from root
-                    dist.scatter(params.grad, src=0, group=group, async_op=False)
-
-            # back-propagate
-            optimizer.step()
-
+            n_iter += 1
             running_loss += loss.item()
             if batch_idx % 20 == 19:    # print every 20 mini-batches
-                print('rank:', rank, "epoch:", epoch, 'batch num:', batch_idx, 'loss:', running_loss/20)
+                logger.print("rank={}, epoch={}, batch_idx={}, loss={}".format(rank, epoch, batch_idx, running_loss/20))
                 running_loss = 0.0
-                
+
+            if n_iter >= 40:
+                break
+    dt = time.time()-t0
+    logger.print("dt={}, n_iter={}".format(dt, n_iter))
     # train is over
 
     # test
