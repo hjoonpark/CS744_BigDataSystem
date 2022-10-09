@@ -61,7 +61,6 @@ def test_model(model, test_loader, criterion):
     print('Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
             test_loss, correct, len(test_loader.dataset),
             100. * correct / len(test_loader.dataset)))
-            
 
 def main():
     file_path = os.path.abspath(os.path.dirname(__file__))
@@ -71,7 +70,6 @@ def main():
     logger = Logger(log_path)
     print("log_path={}".format(log_path))
     
-
     normalize = transforms.Normalize(mean=[x/255.0 for x in [125.3, 123.0, 113.9]],
                                 std=[x/255.0 for x in [63.0, 62.1, 66.7]])
     transform_train = transforms.Compose([
