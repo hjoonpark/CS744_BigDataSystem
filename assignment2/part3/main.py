@@ -63,8 +63,8 @@ def train_model(model, epoch, input_data, target_data, optimizer, criterion, gro
     return loss
 
 def main():
-    file_path = os.path.join(os.path.realpath(__file__), "..")
-
+    file_path = os.path.abspath(os.path.dirname(__file__))
+    
     # python main.py --master-ip $ip_address$ --num-nodes 4 --rank $rank$
     parser = argparse.ArgumentParser(description='Distributed PyTorch Training')
     parser.add_argument('--master-ip', default='10.10.1.1', type=str, metavar='N',help='manual ip number', dest='master_ip')
