@@ -37,7 +37,7 @@ def test_model(model, test_loader, criterion, logger):
     test_loss /= len(test_loader)
     logger.print("Test average={}, accuracy={}/{}={}".foramt(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_load.dataset)))
             
-def train_model(model, input_data, target_data, epoch, optimizer, criterion):
+def train_model(model, epoch, input_data, target_data, optimizer, criterion):
     # each batch is divided into processors (nodes), and averaged gradient sent back to each node for respective back-propagation
     # we first send the gradients of the 3 nodes to the root node, average them, and then send them to the 3 nodes respectively.
     
@@ -141,6 +141,7 @@ def main():
         running_loss = 0
         for batch_idx, (input_data, target_data) in enumerate(train_loader):
             loss = train_model(model, epoch, input_data, target_data, optimizer, criterion)
+
             n_iter += 1
             running_loss += loss.item()
             if batch_idx % 20 == 19:    # print every 20 mini-batches
