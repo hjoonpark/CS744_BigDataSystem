@@ -77,7 +77,7 @@ def train_model(model, epoch, input_data, target_data, optimizer, criterion, gro
             # send gradient to root (rank=0)
             dist.gather(params.grad, group=group, async_op=False)
             # receive back the gradient from root
-            dist.scatter(params.grad, src=0, group=group, async_op=False)(params.grad, op=dist.ReduceOp.SUM, group=group, async_op=False)
+            dist.scatter(params.grad, src=0, group=group, async_op=False)
 
     # back-propagate
     optimizer.step()
