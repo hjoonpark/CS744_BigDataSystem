@@ -35,7 +35,7 @@ def test_model(model, test_loader, criterion, logger):
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader)
-    logger.print("Test average={}, accuracy={}/{}={}".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_load.dataset)))
+    logger.print("Test average={}, accuracy={}/{}={}".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
             
 def train_model(model, epoch, input_data, target_data, optimizer, criterion, group, group_size):
 
