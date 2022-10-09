@@ -38,9 +38,6 @@ def test_model(model, test_loader, criterion, logger):
     logger.print("Test average={}, accuracy={}/{}={}".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
             
 def train_model(model, epoch, input_data, target_data, optimizer, criterion, group, group_size):
-    # each batch is divided into processors (nodes), and averaged gradient sent back to each node for respective back-propagation
-    # we first send the gradients of the 3 nodes to the root node, average them, and then send them to the 3 nodes respectively.
-    
     # zero the parameter gradients
     optimizer.zero_grad()
 
@@ -116,9 +113,12 @@ def main():
 
     model = mdl.VGG11()
     
-    # [PART 3] use pytorch's distributed functionality
     model.to(device)
+
+    # ==================================================================================== #
+    # [PART 3] use pytorch's distributed functionality
     model = nn.parallel.DistributedDataParallel(model)
+    # ==================================================================================== #
     print(model)
     print("device: {}".format(device))
 
@@ -132,8 +132,6 @@ def main():
     t0 = time.time()
     n_iter = 0
     for epoch in range(1):
-        # each batch is divided into processors (nodes), and averaged gradient sent back to each node for respective back-propagation
-        # we first send the gradients of the 3 nodes to the root node, average them, and then send them to the 3 nodes respectively.
         running_loss = 0
         for batch_idx, (input_data, target_data) in enumerate(train_loader):
             loss = train_model(model, epoch, input_data, target_data, optimizer, criterion, group, group_size)

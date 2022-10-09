@@ -51,10 +51,12 @@ def train_model(model, epoch, input_data, target_data, optimizer, criterion, gro
     # compute gradient
     loss.backward()
 
+    # ==================================================================================== #
     # [TASK B] use allreduce (ring reduce), instead of scatter/gather
     for params in model.parameters():
         params.grad = params.grad / group_size
         dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=group, async_op=False)
+    # ==================================================================================== #
 
     # back-propagate
     optimizer.step()

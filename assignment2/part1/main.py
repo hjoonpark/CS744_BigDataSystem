@@ -33,11 +33,13 @@ def train_model(model, train_loader, optimizer, criterion, epoch):
         # zero the parameter gradients
         optimizer.zero_grad()
 
-        # forward + backward + optimize
+        # ==================================================================================== #
+        # standard way of forward + backward + optimize
         outputs = model(data)
         loss = criterion(outputs, target)
         loss.backward()
         optimizer.step()
+        # ==================================================================================== #
 
         running_loss += loss.item()
         if batch_idx % 20 == 19:    # print every 20 mini-batches

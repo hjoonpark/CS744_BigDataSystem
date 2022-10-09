@@ -51,6 +51,7 @@ def train_model(model, epoch, input_data, target_data, optimizer, criterion, gro
     # compute gradient
     loss.backward()
 
+    # ==================================================================================== #
     # average gradients across nodes if current node is not root (rank=0)
     if rank == 0:
         # current node is root
@@ -78,6 +79,7 @@ def train_model(model, epoch, input_data, target_data, optimizer, criterion, gro
             dist.gather(params.grad, group=group, async_op=False)
             # receive back the gradient from root
             dist.scatter(params.grad, src=0, group=group, async_op=False)
+    # ==================================================================================== #
 
     # back-propagate
     optimizer.step()
