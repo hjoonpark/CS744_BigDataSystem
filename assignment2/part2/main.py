@@ -29,6 +29,7 @@ def test_model(model, test_loader, criterion):
             pred = output.max(1, keepdim=True)[1]
             correct += pred.eq(target.view_as(pred)).sum().item()
 
+            break
     test_loss /= len(test_loader)
     print('Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
             test_loss, correct, len(test_loader.dataset),
@@ -197,46 +198,7 @@ def main():
                 print('rank:', rank, "epoch:", epoch, 'batch num:', batch_idx, 'loss:', running_loss/20)
                 running_loss = 0.0
                 
-            if batch_idx > 1:
-                break
-        gradients = train_model(model, train_loader, optimizer, criterion, epoch)
-        test_model(model, test_loader, criterion)
-
-        # for each gradient of model parameters
-        gradients_new = []
-        for grad in gradients:
-            gathered_grads = [torch.zeros_like(grad) for _ in range(args.num_nodes)]
-
-            # GATHER
-            """
-            torch.distributed.gather()
-            - tensor: Input tensor
-            - gather_list: List of appropriately-sized tensors to use for gathered data (default is None, must be specified on the destination rank)
-            - dst: Destination rank (default is 0)
-            - group: The process group to work on. If None, the default process group will be used.
-            - async_op: Whether this op should be an async op
-            """
-            if rank == 0:
-                # current device is the root node, so gather from other nodes
-                dist.gather(tensor=grad, gather_list=gathered_grads)
-            else:
-                # gather from other nodes
-                gather(tensor=grad, rank=rank, tensor_list=gathered_grads)
-
-            # GATHER: compute average gradient
-            if rank == 0:
-                grad_sum = torch.zeros_like(grad)
-                for group_idx in range(len(gathered_grads)):
-                    grad_sum = torch.add(grad_sum, gathered_grads[group_idx])
-                grad_mean = torch.divide(grad_sum, len(gathered_grads))
-            else:
-                grad_mean = torch.zeros_like(grad)
-        
-            # SCATTER
-            dist.scatter(grad_mean, src=0, group=dist.group.WORLD)
-
-            # append to new gradients
-            gradients_new.append(grad_mean)
+            break
     # train is over
 
     # test
