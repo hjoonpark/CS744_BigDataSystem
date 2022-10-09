@@ -63,6 +63,16 @@ def test_model(model, test_loader, criterion):
             100. * correct / len(test_loader.dataset)))
 
 def main():
+    # python main.py --master-ip $ip_address$ --num-nodes 4 --rank $rank$
+    parser = argparse.ArgumentParser(description='Distributed PyTorch Training')
+    parser.add_argument('--master-ip', default='10.10.1.1', type=str, metavar='N',help='manual ip number', dest='master_ip')
+    parser.add_argument('--num-nodes', default=4, type=int, help='number of nodes for distributed training', dest='num_nodes')
+    parser.add_argument('--rank', default=0, type=int, help='node rank for distributed training')
+    args = parser.parse_args()
+    print("args: {}".format(args))
+
+    rank = args.rank
+    
     file_path = os.path.abspath(os.path.dirname(__file__))
     save_dir = os.path.join(file_path, "output")
     os.makedirs(save_dir, exist_ok=True)
