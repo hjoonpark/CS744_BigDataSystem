@@ -45,7 +45,7 @@ def train_model(model, input_data, target_data, epoch, optimizer, criterion):
     optimizer.zero_grad()
 
     # forward + backward + optimize
-    outputs = model(data)
+    outputs = model(input_data)
     loss = criterion(outputs, target)
     
     # compute gradient
