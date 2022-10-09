@@ -146,7 +146,6 @@ def main():
                 print('rank:', rank, "epoch:", epoch, 'batch num:', batch_idx, 'loss:', running_loss/20)
                 running_loss = 0.0
                 
-            break
     # train is over
 
     # test
