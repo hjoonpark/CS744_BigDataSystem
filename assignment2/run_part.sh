@@ -1,6 +1,6 @@
 #!/bin/bash
 PART=$1
-$NUM_NODES=$2
+NUM_NODES=$2
 RANK=$3
 echo "PART=${PART}, NUM_NODES=${NUM_NODES}, RANK=${RANK}"
 
