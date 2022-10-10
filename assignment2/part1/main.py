@@ -46,9 +46,9 @@ def train_model(model, rank, epoch, train_loader, optimizer, criterion):
 
             if n_iter >= 40:
                 break
-    if rank == 0:
-        dt /= n_iter
-        f.write("dt={} per iteration. n_iter={}\n".format(dt, n_iter))
+        if rank == 0:
+            dt /= n_iter
+            f.write("dt={} per iteration. n_iter={}\n".format(dt, n_iter))
 
 def test_model(model, test_loader, criterion):
     model.eval()
