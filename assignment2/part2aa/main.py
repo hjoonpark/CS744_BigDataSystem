@@ -19,10 +19,9 @@ torch.set_num_threads(4)
 log_iter = 20
 group_list = []
 
-seed = 2021
+seed = 0
 torch.manual_seed(seed)
 np.random.seed(seed)
- 
 
 def train_model(model, train_loader, optimizer, criterion, epoch, rank):
     """
@@ -45,8 +44,6 @@ def train_model(model, train_loader, optimizer, criterion, epoch, rank):
     with open(f'{log_file_name}', 'a+') as f:
         for batch_idx, (data, target) in enumerate(train_loader):
             batch_count = batch_idx + 1
-            if batch_idx >= stop_iter:
-                break
 
             if rank == 0:
                 t0 = time.time()
@@ -80,6 +77,9 @@ def train_model(model, train_loader, optimizer, criterion, epoch, rank):
             if rank == 0:
                 dt += time.time()-t0
                 n_iter += 1
+
+            if n_iter >= 40:
+                break
             # logging
             # elapsed_time = time.time() - start_time
             # f.write(f"{epoch},{batch_count},{elapsed_time}\n")
