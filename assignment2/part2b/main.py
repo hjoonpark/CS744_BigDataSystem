@@ -147,10 +147,10 @@ def main():
                 dt += (time.time()-t0)
                 n_iter += 1
 
-            running_loss += loss.item()
-            if batch_idx % 20 == 19:    # print every 20 mini-batches
-                logger.print("dt={:.2f} rank={} epoch={} batch_idx={} loss={}".format(dt, rank, epoch, batch_idx, running_loss/20))
-                running_loss = 0.0
+                running_loss += loss.item()
+                if batch_idx % 20 == 19:    # print every 20 mini-batches
+                    logger.print("dt={:.2f} rank={} epoch={} batch_idx={} loss={}".format(dt, rank, epoch, batch_idx, running_loss/20))
+                    running_loss = 0.0
 
             if n_iter >= 40:
                 break
