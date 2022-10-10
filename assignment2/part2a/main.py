@@ -60,17 +60,17 @@ def train_model(model, epoch, input_data, target_data, optimizer, criterion, gro
             grads_from_nodes = [torch.zeros_like(params.grad) for _ in range(group_size)]
 
             # Gathers a list of tensors in a single process: gather gradients from other nodes
-            dist.gather(params.grad, gather_list=grads_from_nodes, group=group, async_op=False)
+            dist.gather(params.grad, grads_from_nodes, group=group, async_op=False)
 
             # average the gradients
-            avg_grad = torch.zeros_like(params.grad)
-            for node_idx in range(group_size):
-                avg_grad = torch.add(avg_grad, grads_from_nodes[node_idx])
-            avg_grad = torch.divide(avg_grad, group_size)
-
+            grad_sum = torch.zeros_like(params.grad)
+            for i in range(group_size):
+                grad_sum += grad_list[i]
+            grad_mean = grad_sum / group_size
+        
             # Scatters a list of tensors to all processes in a group: scatter back to nodes
-            scatter_list = [avg_grad] * group_size
-            dist.scatter(params.grad, scatter_list, src=0, group=group, async_op=False)
+            scatter_list = [grad_mean] * group_size
+            dist.scatter(params.grad, scatter_list, group=group, src=0, async_op=False)
     else:
         # current node is one of the workers
         # The worker node first sends its gradient to the root node, and then receives the averaged gradient calculated by the root node.
@@ -78,7 +78,7 @@ def train_model(model, epoch, input_data, target_data, optimizer, criterion, gro
             # send gradient to root (rank=0)
             dist.gather(params.grad, group=group, async_op=False)
             # receive back the gradient from root
-            dist.scatter(params.grad, src=0, group=group, async_op=False)
+            dist.scatter(params.grad, group=group, src=0, async_op=False)
     # ==================================================================================== #
 
     # back-propagate
@@ -170,7 +170,7 @@ def main():
 
             running_loss += loss.item()
             if batch_idx % 20 == 19:    # print every 20 mini-batches
-                logger.print("rank={} epoch={} batch_idx={} loss={}".format(rank, epoch, batch_idx, running_loss/20))
+                logger.print("dt={:.2f} rank={} epoch={} batch_idx={} loss={}".format(dt, rank, epoch, batch_idx, running_loss/20))
                 running_loss = 0.0
 
             if n_iter >= 40:
