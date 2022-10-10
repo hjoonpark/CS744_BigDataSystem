@@ -40,7 +40,7 @@ def train_model(model, train_loader, optimizer, criterion, epoch, rank):
     # remember to exit the train loop at end of the epoch
     start_time = time.time()
     log_iter_start_time = time.time()
-    with open(f'output/{log_file_name}', 'a+') as f:
+    with open(f'{log_file_name}', 'a+') as f:
         for batch_idx, (data, target) in enumerate(train_loader):
             batch_count = batch_idx + 1
             if batch_idx >= stop_iter:
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     save_dir = os.path.join(file_path, "..", "output")
     os.makedirs(save_dir, exist_ok=True)
     log_file_name = os.path.join(save_dir, "part2aa_rank{}.txt".format(rank))
-    with open(f'output/{log_file_name}', 'w+') as f:
+    with open(f'{log_file_name}', 'w+') as f:
         f.write("epoch,iteration,elpased_time\n")
     
     for group in range(0, num_nodes):
