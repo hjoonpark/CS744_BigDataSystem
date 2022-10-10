@@ -85,8 +85,8 @@ def main():
     transform_test = transforms.Compose([
             transforms.ToTensor(),
             normalize])
-    training_set = datasets.CIFAR10(root="./data", train=True, download=True, transform=transform_train)
-    train_loader = torch.utils.data.DataLoader(training_set, num_workers=2, batch_size=batch_size, sampler=None, shuffle=True, pin_memory=True)
+    train_set = datasets.CIFAR10(root="./data", train=True, download=True, transform=transform_train)
+    train_loader = torch.utils.data.DataLoader(train_set, num_workers=2, batch_size=batch_size, sampler=None, shuffle=True, pin_memory=True)
     test_set = datasets.CIFAR10(root="./data", train=False, download=True, transform=transform_test)
 
     test_loader = torch.utils.data.DataLoader(test_set, num_workers=2, batch_size=batch_size, shuffle=False, pin_memory=True)
