@@ -81,7 +81,7 @@ def train_model(model, rank, epoch, train_loader, optimizer, criterion):
                     T4 = time.time()
                     dist.scatter(params.grad, scatter_list, group=group, src=0, async_op=False)
                     T5 = time.time()
-                    f.write("[{}] {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(param_idx, T1-T0, T2-T1, T3-T2, T4-T3, T5-T4))
+                    f.write("[{}] {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}\n".format(param_idx, T1-T0, T2-T1, T3-T2, T4-T3, T5-T4))
             else:
                 # current node is one of the workers
                 # The worker node first sends its gradient to the root node, and then receives the averaged gradient calculated by the root node.

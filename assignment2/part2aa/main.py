@@ -74,7 +74,7 @@ def train_model(model, train_loader, optimizer, criterion, epoch, rank):
                     dist.scatter(params.grad, scatter_list, group=group, src=0, async_op=False)
                     T5 = time.time()
 
-                    f.write("[{}] {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(param_idx, T1-T0, T2-T1, T3-T2, T4-T3, T5-T4))
+                    f.write("[{}] {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}\n".format(param_idx, T1-T0, T2-T1, T3-T2, T4-T3, T5-T4))
             else:
                 for params in model.parameters():
                     dist.gather(params.grad, group=group, async_op=False)
