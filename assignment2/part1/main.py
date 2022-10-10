@@ -19,6 +19,7 @@ batch_size = 256 # batch for one node
 def train_model(model, rank, epoch, train_loader, optimizer, criterion):
     file_path = os.path.abspath(os.path.dirname(__file__))
     dt = 0
+    n_iter = 0
     with open(f"{log_path}", "a+") as f:
         running_loss = 0
         for batch_idx, (input_data, target_data) in enumerate(train_loader):
