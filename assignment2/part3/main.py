@@ -136,7 +136,7 @@ def main():
         for batch_idx, (input_data, target_data) in enumerate(train_loader):
             t0 = time.time()
             loss = train_model(model, epoch, input_data, target_data, optimizer, criterion, group, group_size)
-            dt += (t0-time.time())
+            dt += (time.time()-t0)
             n_iter += 1
 
             running_loss += loss.item()
