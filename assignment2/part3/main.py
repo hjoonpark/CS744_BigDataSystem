@@ -32,13 +32,13 @@ def test_model(model, test_loader, criterion):
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader)
-    with open(os.path.join(file_path, "..", "output", "part3_rank{}.txt".format(rank)), "a+") as f:
+    with open(f"{log_path}", "a+") as f:
         print("Test average={} accuracy={}/{}={}\n".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
         
 def train_model(model, rank, epoch, train_loader, optimizer, criterion):
     file_path = os.path.abspath(os.path.dirname(__file__))
     dt = 0
-    with open(os.path.join(file_path, "..", "output", "part3_rank{}.txt".format(rank)), "a+") as f:
+    with open(f"{log_path}", "a+") as f:
         running_loss = 0
         for batch_idx, (input_data, target_data) in enumerate(train_loader):
             if rank == 0:
@@ -81,6 +81,7 @@ def main():
     file_path = os.path.abspath(os.path.dirname(__file__))
     save_dir = os.path.join(file_path, "..", "output")
     os.makedirs(save_dir, exist_ok=True)
+    log_path = os.path.join(save_dir, "part3_rank{}.txt".format(rank))
 
     """
     torch.distributed.init_process_group() parameters

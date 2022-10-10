@@ -19,7 +19,7 @@ batch_size = 256 # batch for one node
 def train_model(model, rank, epoch, train_loader, optimizer, criterion):
     file_path = os.path.abspath(os.path.dirname(__file__))
     dt = 0
-    with open(os.path.join(file_path, "..", "output", "part1_rank{}.txt".format(rank)), "a+") as f:
+    with open(f"{log_path}", "a+") as f:
         running_loss = 0
         for batch_idx, (input_data, target_data) in enumerate(train_loader):
             if rank == 0:
@@ -62,10 +62,11 @@ def test_model(model, test_loader, criterion):
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader)
-    with open(os.path.join(file_path, "..", "output", "part2a_rank{}.txt".format(rank)), "a+") as f:
+    with open(f"{log_path}", "a+") as f:
         print("Test average={} accuracy={}/{}={}\n".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
 
 def main():
+    global group, group_size, log_path
     # python main.py --master-ip $ip_address$ --num-nodes 4 --rank $rank$
     parser = argparse.ArgumentParser(description='Distributed PyTorch Training')
     parser.add_argument('--master-ip', default='10.10.1.1', type=str, metavar='N',help='manual ip number', dest='master_ip')
@@ -78,6 +79,7 @@ def main():
     file_path = os.path.abspath(os.path.dirname(__file__))
     save_dir = os.path.join(file_path, "..", "output")
     os.makedirs(save_dir, exist_ok=True)
+    log_path = os.path.join(save_dir, "part1_rank{}.txt".format(rank))
     
     normalize = transforms.Normalize(mean=[x/255.0 for x in [125.3, 123.0, 113.9]],
                                 std=[x/255.0 for x in [63.0, 62.1, 66.7]])

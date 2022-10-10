@@ -31,13 +31,13 @@ def test_model(model, test_loader, criterion):
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader)
-    with open(os.path.join(file_path, "..", "output", "part2b_rank{}.txt".format(rank)), "a+") as f:
+    with open(f"{log_path}", "a+") as f:
         print("Test average={} accuracy={}/{}={}\n".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
 
 def train_model(model, rank, epoch, train_loader, optimizer, criterion):
     file_path = os.path.abspath(os.path.dirname(__file__))
     dt = 0
-    with open(os.path.join(file_path, "..", "output", "part2b_rank{}.txt".format(rank)), "a+") as f:
+    with open(f"{log_path}", "a+") as f:
         running_loss = 0
         for batch_idx, (input_data, target_data) in enumerate(train_loader):
             # each batch is divided into processors (nodes), and averaged gradient sent back to each node for respective back-propagation
@@ -76,6 +76,7 @@ def train_model(model, rank, epoch, train_loader, optimizer, criterion):
         f.write("dt={} per iteration. n_iter={}\n".format(dt, n_iter))
 
 def main():
+    global group, group_size, log_path
     parser = argparse.ArgumentParser(description='Distributed PyTorch Training')
     parser.add_argument('--master-ip', default='10.10.1.1', type=str, metavar='N',help='manual ip number', dest='master_ip')
     parser.add_argument('--num-nodes', default=4, type=int, help='number of nodes for distributed training', dest='num_nodes')
@@ -87,6 +88,7 @@ def main():
     file_path = os.path.abspath(os.path.dirname(__file__))
     save_dir = os.path.join(file_path, "..", "output")
     os.makedirs(save_dir, exist_ok=True)
+    log_path = os.path.join(save_dir, "part2b_rank{}.txt".format(rank))
 
     """
     torch.distributed.init_process_group() parameters
