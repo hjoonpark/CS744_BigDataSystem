@@ -34,7 +34,7 @@ def test_model(model, test_loader, criterion):
     with open(os.path.join(file_path, "..", "output", "part2b_rank{}.txt".format(rank)), "a+") as f:
         print("Test average={} accuracy={}/{}={}\n".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
 
-def train_model(model, rank, epoch, optimizer, criterion):
+def train_model(model, rank, epoch, train_loader, optimizer, criterion):
     file_path = os.path.abspath(os.path.dirname(__file__))
     dt = 0
     with open(os.path.join(file_path, "..", "output", "part2b_rank{}.txt".format(rank)), "a+") as f:
@@ -141,7 +141,7 @@ def main():
 
     # running training for one epoch
     for epoch in range(1):
-        loss = train_model(model, rank, epoch, optimizer, criterion)
+        loss = train_model(model, rank, epoch, train_loader, optimizer, criterion)
     # train is over
 
     # test
