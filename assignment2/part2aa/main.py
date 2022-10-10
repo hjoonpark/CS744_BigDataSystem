@@ -105,7 +105,7 @@ def test_model(model, test_loader, criterion):
 
 def init_process(master_ip, rank, size, fn, backend='gloo'):
     """ Initialize the distributed environment. """
-    dist.init_process_group(backend, init_method=f"tcp://{master_ip}:6585",
+    dist.init_process_group(backend, init_method=f"tcp://{master_ip}:6545",
                             rank=rank, world_size=size)
     fn(rank, size)
 
