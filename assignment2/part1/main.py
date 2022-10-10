@@ -98,7 +98,6 @@ def main():
     optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0001)
 
     logger.print(model)
-    logger.print("init_method={}".format(init_method))
     logger.print("args={}".format(args))
     logger.print("device={}".format(device))
     logger.print("tr={} te={} batch_size={}".format(len(train_set), len(test_set), batch_size))
