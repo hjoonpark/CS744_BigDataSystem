@@ -67,7 +67,7 @@ def test_model(model, test_loader, criterion):
         print("Test average={} accuracy={}/{}={}\n".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
 
 def main():
-    global group, group_size, log_path
+    global log_path
     # python main.py --master-ip $ip_address$ --num-nodes 4 --rank $rank$
     parser = argparse.ArgumentParser(description='Distributed PyTorch Training')
     parser.add_argument('--master-ip', default='10.10.1.1', type=str, metavar='N',help='manual ip number', dest='master_ip')

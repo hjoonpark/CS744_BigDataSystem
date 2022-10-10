@@ -1,0 +1,12 @@
+---------- Network Stat. (Before) -------------
+Inter-|   Receive                                                |  Transmit
+ face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
+  eth0: 291923385036 107732795    0 216860    0     0          0         0 287424310030 7519663    0    0    0     0       0          0
+    lo: 295626544 5116825    0    0    0     0          0         0 295626544 5116825    0    0    0     0       0          0
+  eth1: 1887248   17249    0    0    0     0          0         0  2053085   15170    0    0    0     0       0          0
+---------- Network Stat. (After) -------------
+Inter-|   Receive                                                |  Transmit
+ face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
+  eth0: 291923400589 107733130    0 216861    0     0          0         0 287424310938 7519669    0    0    0     0       0          0
+    lo: 295626544 5116825    0    0    0     0          0         0 295626544 5116825    0    0    0     0       0          0
+  eth1: 1904966   17334    0    0    0     0          0         0  2072829   15259    0    0    0     0       0          0

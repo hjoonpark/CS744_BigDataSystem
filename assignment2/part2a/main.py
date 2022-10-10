@@ -15,6 +15,7 @@ import time
 device = "cpu"
 torch.set_num_threads(4)
 
+group_list = []
 batch_size = 256 # batch for one node
 
 def test_model(model, test_loader, criterion):
@@ -153,7 +154,6 @@ def main():
 
     model = mdl.VGG11()
     model.to(device)
-    print(model)
 
     optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0001)
 
@@ -163,8 +163,10 @@ def main():
     print("tr={} te={} batch_size={}".format(len(train_set), len(test_set), batch_size))
 
     # process group
-    group = dist.group.WORLD
-    group_size = args.num_nodes
+    group = dist.new_group(group_list)
+    group_size = len(group_list)
+    for group in range(0, num_nodes):
+        group_list.append(group)
 
     # running training for one epoch
     for epoch in range(1):
