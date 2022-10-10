@@ -59,7 +59,7 @@ def main():
     file_path = os.path.abspath(os.path.dirname(__file__))
     save_dir = os.path.join(file_path, "..", "output")
     os.makedirs(save_dir, exist_ok=True)
-    log_path = os.path.join(save_dir, "log_rank{}.txt".format(rank))
+    log_path = os.path.join(save_dir, "part1_rank{}.txt".format(rank))
     logger = Logger(log_path)
     
     normalize = transforms.Normalize(mean=[x/255.0 for x in [125.3, 123.0, 113.9]],
