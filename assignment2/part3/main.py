@@ -35,7 +35,7 @@ def test_model(model, test_loader, criterion):
     with open(os.path.join(file_path, "..", "output", "part3_rank{}.txt".format(rank)), "a+") as f:
         print("Test average={} accuracy={}/{}={}\n".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
         
-def train_model(model, rank, epoch, input_data, target_data, optimizer, criterion):
+def train_model(model, rank, epoch, optimizer, criterion):
     file_path = os.path.abspath(os.path.dirname(__file__))
     dt = 0
     with open(os.path.join(file_path, "..", "output", "part3_rank{}.txt".format(rank)), "a+") as f:
@@ -52,7 +52,7 @@ def train_model(model, rank, epoch, input_data, target_data, optimizer, criterio
             loss.backward()
             optimizer.step()
             # ----- timing starts ---------------------------------------------------- #
-            
+
             if rank == 0:
                 dt += (time.time()-t0)
                 n_iter += 1
@@ -141,7 +141,7 @@ def main():
 
     # running training for one epoch
     for epoch in range(1):
-        loss = train_model(model, rank, epoch, input_data, target_data, optimizer, criterion)
+        loss = train_model(model, rank, epoch, optimizer, criterion)
     # train is over
 
     # test

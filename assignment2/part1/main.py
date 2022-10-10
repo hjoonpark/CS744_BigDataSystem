@@ -16,7 +16,7 @@ device = "cpu"
 torch.set_num_threads(4)
 batch_size = 256 # batch for one node
 
-def train_model(model, rank, epoch, input_data, target_data, optimizer, criterion):
+def train_model(model, rank, epoch, optimizer, criterion):
     file_path = os.path.abspath(os.path.dirname(__file__))
     dt = 0
     with open(os.path.join(file_path, "..", "output", "part1_rank{}.txt".format(rank)), "a+") as f:
@@ -33,7 +33,7 @@ def train_model(model, rank, epoch, input_data, target_data, optimizer, criterio
             loss.backward()
             optimizer.step()
             # ----- timing end ---------------------------------------------------- #
-            
+
             if rank == 0:
                 dt += (time.time()-t0)
                 n_iter += 1
@@ -109,7 +109,7 @@ def main():
     
     # running training for one epoch
     for epoch in range(1):
-        loss = train_model(model, rank, epoch, input_data, target_data, optimizer, criterion)
+        loss = train_model(model, rank, epoch, optimizer, criterion)
     # train is over
 
     # test
