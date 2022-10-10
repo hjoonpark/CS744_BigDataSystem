@@ -31,7 +31,7 @@ def train_model(model, epoch, input_data, target_data, optimizer, criterion):
     optimizer.step()
     return loss
 
-def test_model(model, test_loader, criterion):
+def test_model(model, test_loader, criterion, logger):
     model.eval()
     test_loss = 0
     correct = 0
@@ -113,7 +113,7 @@ def main():
     # train is over
 
     # test
-    test_model(model, test_loader, criterion)
+    test_model(model, test_loader, criterion, logger)
 
 if __name__ == "__main__":
     # [IMPORTANT] set seeds
