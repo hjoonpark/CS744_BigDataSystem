@@ -59,7 +59,7 @@ def train_model(model, rank, epoch, train_loader, optimizer, criterion):
             # average gradients across nodes if current node is not root (rank=0)
             if rank == 0:
                 # current node is root
-                for params in model.parameters():
+                for param_idx, params in enumerate(model.parameters()):
                     T0 = time.time()
                     # list to hold gradient from each of the nodes
                     grads_from_nodes = [torch.zeros_like(params.grad) for _ in range(group_size)]
@@ -81,7 +81,7 @@ def train_model(model, rank, epoch, train_loader, optimizer, criterion):
                     T4 = time.time()
                     dist.scatter(params.grad, scatter_list, group=group, src=0, async_op=False)
                     T5 = time.time()
-                    f.write("[{}] {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(T1-T0, T2-T1, T3-T2, T4-T3, T5-T4))
+                    f.write("[{}] {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(param_idx, T1-T0, T2-T1, T3-T2, T4-T3, T5-T4))
             else:
                 # current node is one of the workers
                 # The worker node first sends its gradient to the root node, and then receives the averaged gradient calculated by the root node.

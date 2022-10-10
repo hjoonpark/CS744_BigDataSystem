@@ -56,7 +56,7 @@ def train_model(model, train_loader, optimizer, criterion, epoch, rank):
 
             # Communicating gradients
             if rank == 0:
-                for params in model.parameters():
+                for param_idx, params in enumerate(model.parameters()):
                     T0 = time.time()
                     grad_list = [torch.zeros_like(params.grad) for _ in range(group_size)]
                     T1 = time.time()
@@ -73,7 +73,8 @@ def train_model(model, train_loader, optimizer, criterion, epoch, rank):
                     T4 = time.time()
                     dist.scatter(params.grad, scatter_list, group=group, src=0, async_op=False)
                     T5 = time.time()
-                    
+
+                    f.write("[{}] {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(param_idx, T1-T0, T2-T1, T3-T2, T4-T3, T5-T4))
             else:
                 for params in model.parameters():
                     dist.gather(params.grad, group=group, async_op=False)
