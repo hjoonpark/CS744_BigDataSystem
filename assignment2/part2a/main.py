@@ -152,7 +152,7 @@ def main():
     # load train set
     train_set = datasets.CIFAR10(root="./data", train=True, download=True, transform=transform_train)
     sampler = DistributedSampler(train_set, seed=0) if torch.distributed.is_available() else None
-    train_loader = torch.utils.data.DataLoader(train_set, num_workers=2, batch_size=batch_size, sampler=sampler, shuffle=True, pin_memory=True)
+    train_loader = torch.utils.data.DataLoader(train_set, num_workers=2, batch_size=batch_size, sampler=sampler, pin_memory=True)
 
     # load test set
     test_set = datasets.CIFAR10(root="./data", train=False, download=True, transform=transform_test)
