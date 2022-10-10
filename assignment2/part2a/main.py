@@ -133,6 +133,7 @@ def main():
 
     init_method = "tcp://{}:6666".format(args.master_ip)
     print("init_method: {}".format(init_method))
+    dist.init_process_group(backend="gloo", init_method=init_method, world_size=args.num_nodes, rank=args.rank)
 
     # preprocessing dataset
     normalize = transforms.Normalize(mean=[x/255.0 for x in [125.3, 123.0, 113.9]],
@@ -169,7 +170,6 @@ def main():
     print("device={}".format(device))
     print("tr={} te={} batch_size={}".format(len(train_set), len(test_set), batch_size))
 
-    dist.init_process_group(backend="gloo", init_method=init_method, world_size=args.num_nodes, rank=args.rank)
     # running training for one epoch
     for epoch in range(1):
         train_model(model, rank, epoch, train_loader, optimizer, criterion)
