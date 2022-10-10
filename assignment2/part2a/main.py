@@ -165,7 +165,7 @@ def main():
         for batch_idx, (input_data, target_data) in enumerate(train_loader):
             t0 = time.time()
             loss = train_model(model, epoch, input_data, target_data, optimizer, criterion, group, group_size, rank)
-            dt += (t0-time.time())
+            dt += (time.time()-t0)
             n_iter += 1
 
             running_loss += loss.item()
@@ -176,7 +176,7 @@ def main():
             if n_iter >= 40:
                 break
     dt /= n_iter
-    logger.print("dt={} n_iter={}".format(dt, n_iter))
+    logger.print("dt={} per iteration. n_iter={}".format(dt, n_iter))
     # train is over
 
     # test
