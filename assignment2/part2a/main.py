@@ -35,6 +35,9 @@ def test_model(model, test_loader, criterion):
         print("Test average={} accuracy={}/{}={}\n".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
 
 def train_model(model, rank, epoch, train_loader, optimizer, criterion):
+    group = dist.new_group(group_list)
+    group_size = len(group_list)
+
     file_path = os.path.abspath(os.path.dirname(__file__))
     dt = 0
     n_iter = 0
@@ -124,6 +127,7 @@ def main():
     - world_size: Number of processes participating in the job
     - rank: Rank of the current process (it should be a number between 0 and world_size-1)
     """
+
     init_method = "tcp://{}:6666".format(args.master_ip)
     print("init_method: {}".format(init_method))
     dist.init_process_group(backend="gloo", init_method=init_method, world_size=args.num_nodes, rank=args.rank)
@@ -165,12 +169,10 @@ def main():
     # process group
     for group in range(0, args.num_nodes):
         group_list.append(group)
-    group = dist.new_group(group_list)
-    group_size = len(group_list)
-
+        
     # running training for one epoch
     for epoch in range(1):
-        loss = train_model(model, rank, epoch, train_loader, optimizer, criterion)
+        train_model(model, rank, epoch, train_loader, optimizer, criterion)
     # train is over
 
     # test
