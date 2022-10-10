@@ -1,11 +1,11 @@
 #!/bin/bash
 PART=$1
-RANK=$2
-echo "PART=${PART}, RANK=${RANK}"
+$NUM_NODES=$2
+RANK=$3
+echo "PART=${PART}, NUM_NODES=${NUM_NODES}, RANK=${RANK}"
 
 # ip of the root
 MASTER_IP=10.10.1.1
-NUM_NODES=4
 
 # make output directories for each of the nodes
 # root node: 0
