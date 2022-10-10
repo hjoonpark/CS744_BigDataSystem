@@ -163,7 +163,7 @@ def main():
     print("tr={} te={} batch_size={}".format(len(train_set), len(test_set), batch_size))
 
     # process group
-    for group in range(0, num_nodes):
+    for group in range(0, args.num_nodes):
         group_list.append(group)
     group = dist.new_group(group_list)
     group_size = len(group_list)
