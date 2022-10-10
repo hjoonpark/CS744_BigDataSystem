@@ -7,33 +7,49 @@ from torchvision import datasets, transforms
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import logging
 import random
 import model as mdl
 import argparse
 import time
-import sys
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from logger import Logger
 
 device = "cpu"
 torch.set_num_threads(4)
 batch_size = 256 # batch for one node
 
-def train_model(model, epoch, input_data, target_data, optimizer, criterion):
-    input_data, target_data = input_data.to(device), target_data.to(device)
+def train_model(model, rank, epoch, input_data, target_data, optimizer, criterion):
+    file_path = os.path.abspath(os.path.dirname(__file__))
+    dt = 0
+    with open(os.path.join(file_path, "..", "output", "part1_rank{}.txt".format(rank)), "a+") as f:
+        running_loss = 0
+        for batch_idx, (input_data, target_data) in enumerate(train_loader):
+            if rank == 0:
+                t0 = time.time()
 
-    optimizer.zero_grad()
-    # ==================================================================================== #
-    # standard way of forward + backward + optimize
-    outputs = model(input_data)
-    loss = criterion(outputs, target_data)
-    # ==================================================================================== #
-    loss.backward()
-    optimizer.step()
-    return loss
+            # ----- timing starts ---------------------------------------------------- #
+            input_data, target_data = input_data.to(device), target_data.to(device)
+            optimizer.zero_grad()
+            outputs = model(input_data)
+            loss = criterion(outputs, target_data)
+            loss.backward()
+            optimizer.step()
+            # ----- timing end ---------------------------------------------------- #
+            
+            if rank == 0:
+                dt += (time.time()-t0)
+                n_iter += 1
+                
+                running_loss += loss.item()
+                if batch_idx % 20 == 19:    # print every 20 mini-batches
+                    f.write("dt={:.2f} rank={} epoch={} batch_idx={} loss={}\n".format(dt, rank, epoch, batch_idx, running_loss/20))
+                    running_loss = 0.0
 
-def test_model(model, test_loader, criterion, logger):
+            if n_iter >= 40:
+                break
+    if rank == 0:
+        dt /= n_iter
+        f.write("dt={} per iteration. n_iter={}\n".format(dt, n_iter))
+
+def test_model(model, test_loader, criterion):
     model.eval()
     test_loss = 0
     correct = 0
@@ -46,7 +62,8 @@ def test_model(model, test_loader, criterion, logger):
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader)
-    logger.print("Test average={} accuracy={}/{}={}".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
+    with open(os.path.join(file_path, "..", "output", "part2a_rank{}.txt".format(rank)), "a+") as f:
+        print("Test average={} accuracy={}/{}={}\n".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
 
 def main():
     # python main.py --master-ip $ip_address$ --num-nodes 4 --rank $rank$
@@ -61,8 +78,6 @@ def main():
     file_path = os.path.abspath(os.path.dirname(__file__))
     save_dir = os.path.join(file_path, "..", "output")
     os.makedirs(save_dir, exist_ok=True)
-    log_path = os.path.join(save_dir, "part1_rank{}.txt".format(rank))
-    logger = Logger(log_path)
     
     normalize = transforms.Normalize(mean=[x/255.0 for x in [125.3, 123.0, 113.9]],
                                 std=[x/255.0 for x in [63.0, 62.1, 66.7]])
@@ -88,37 +103,17 @@ def main():
 
     optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0001)
 
-    logger.print(model)
-    logger.print("args={}".format(args))
-    logger.print("device={}".format(device))
-    logger.print("tr={} te={} batch_size={}".format(len(train_set), len(test_set), batch_size))
+    print("args={}".format(args))
+    print("device={}".format(device))
+    print("tr={} te={} batch_size={}".format(len(train_set), len(test_set), batch_size))
     
-    dt = 0
-    n_iter = 0
+    # running training for one epoch
     for epoch in range(1):
-        running_loss = 0
-        for batch_idx, (input_data, target_data) in enumerate(train_loader):
-            if rank == 0:
-                t0 = time.time()
-            loss = train_model(model, epoch, input_data, target_data, optimizer, criterion)
-            if rank == 0:
-                dt += (time.time()-t0)
-                n_iter += 1
-                
-                running_loss += loss.item()
-                if batch_idx % 20 == 19:    # print every 20 mini-batches
-                    logger.print("dt={:.2f} rank={} epoch={} batch_idx={} loss={}".format(dt, rank, epoch, batch_idx, running_loss/20))
-                    running_loss = 0.0
-
-            if n_iter >= 40:
-                break
-    if rank == 0:
-        dt /= n_iter
-        logger.print("dt={} per iteration. n_iter={}".format(dt, n_iter))
+        loss = train_model(model, rank, epoch, input_data, target_data, optimizer, criterion)
     # train is over
 
     # test
-    test_model(model, test_loader, criterion, logger)
+    test_model(model, test_loader, criterion)
 
 if __name__ == "__main__":
     # [IMPORTANT] set seeds

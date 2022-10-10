@@ -13,16 +13,13 @@ import random
 import model as mdl
 import torch.distributed as dist
 import time
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from logger import Logger
 
 device = "cpu"
 torch.set_num_threads(4)
 
 batch_size = 256 # batch for one node
 
-def test_model(model, test_loader, criterion, logger):
+def test_model(model, test_loader, criterion):
     model.eval()
     test_loss = 0
     correct = 0
@@ -35,28 +32,43 @@ def test_model(model, test_loader, criterion, logger):
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader)
-    logger.print("Test average={} accuracy={}/{}={}".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
+    with open(os.path.join(file_path, "..", "output", "part3_rank{}.txt".format(rank)), "a+") as f:
+        print("Test average={} accuracy={}/{}={}\n".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
+        
+def train_model(model, rank, epoch, input_data, target_data, optimizer, criterion):
+    file_path = os.path.abspath(os.path.dirname(__file__))
+    dt = 0
+    with open(os.path.join(file_path, "..", "output", "part3_rank{}.txt".format(rank)), "a+") as f:
+        running_loss = 0
+        for batch_idx, (input_data, target_data) in enumerate(train_loader):
+            if rank == 0:
+                t0 = time.time()
+
+            # ----- timing starts ---------------------------------------------------- #
+            input_data, target_data = input_data.to(device), target_data.to(device)
+            optimizer.zero_grad()
+            outputs = model(input_data)
+            loss = criterion(outputs, target_data)
+            loss.backward()
+            optimizer.step()
+            # ----- timing starts ---------------------------------------------------- #
             
-def train_model(model, epoch, input_data, target_data, optimizer, criterion, group, group_size):
-    input_data, target_data = input_data.to(device), target_data.to(device)
+            if rank == 0:
+                dt += (time.time()-t0)
+                n_iter += 1
+                
+                running_loss += loss.item()
+                if batch_idx % 20 == 19:    # print every 20 mini-batches
+                    f.write("dt={:.2f} rank={} epoch={} batch_idx={} loss={}\n".format(dt, rank, epoch, batch_idx, running_loss/20))
+                    running_loss = 0.0
 
-    # zero the parameter gradients
-    optimizer.zero_grad()
-
-    # forward + backward + optimize
-    outputs = model(input_data)
-    loss = criterion(outputs, target_data)
-    
-    # compute gradient
-    loss.backward() 
-
-    # back-propagate
-    optimizer.step()
-
-    return loss
+            if n_iter >= 40:
+                break
+    if rank == 0:
+        dt /= n_iter
+        f.write("dt={} per iteration. n_iter={}\n".format(dt, n_iter))
 
 def main():
-    
     # python main.py --master-ip $ip_address$ --num-nodes 4 --rank $rank$
     parser = argparse.ArgumentParser(description='Distributed PyTorch Training')
     parser.add_argument('--master-ip', default='10.10.1.1', type=str, metavar='N',help='manual ip number', dest='master_ip')
@@ -69,8 +81,6 @@ def main():
     file_path = os.path.abspath(os.path.dirname(__file__))
     save_dir = os.path.join(file_path, "..", "output")
     os.makedirs(save_dir, exist_ok=True)
-    log_path = os.path.join(save_dir, "part3_rank{}.txt".format(rank))
-    logger = Logger(log_path)
 
     """
     torch.distributed.init_process_group() parameters
@@ -120,43 +130,22 @@ def main():
 
     optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0001)
 
-    logger.print(model)
-    logger.print("init_method={}".format(init_method))
-    logger.print("args={}".format(args))
-    logger.print("device={}".format(device))
-    logger.print("tr={} te={} batch_size={}".format(len(train_set), len(test_set), batch_size))
+    print("init_method={}".format(init_method))
+    print("args={}".format(args))
+    print("device={}".format(device))
+    print("tr={} te={} batch_size={}".format(len(train_set), len(test_set), batch_size))
 
     # process group
     group = dist.group.WORLD
     group_size = args.num_nodes
 
     # running training for one epoch
-    dt = 0
-    n_iter = 0
     for epoch in range(1):
-        running_loss = 0
-        for batch_idx, (input_data, target_data) in enumerate(train_loader):
-            if rank == 0:
-                t0 = time.time()
-            loss = train_model(model, epoch, input_data, target_data, optimizer, criterion, group, group_size)
-            if rank == 0:
-                dt += (time.time()-t0)
-                n_iter += 1
-
-                running_loss += loss.item()
-                if batch_idx % 20 == 19:    # print every 20 mini-batches
-                    logger.print("dt={:.2f} rank={} epoch={} batch_idx={} loss={}".format(dt, rank, epoch, batch_idx, running_loss/20))
-                    running_loss = 0.0
-
-            if n_iter >= 40:
-                break
-    if rank == 0:
-        dt /= n_iter
-        logger.print("dt={} per iteration. n_iter={}".format(dt, n_iter))
+        loss = train_model(model, rank, epoch, input_data, target_data, optimizer, criterion)
     # train is over
 
     # test
-    test_model(model, test_loader, criterion, logger)
+    test_model(model, test_loader, criterion)
 
 if __name__ == "__main__":
     # [IMPORTANT] set seeds
