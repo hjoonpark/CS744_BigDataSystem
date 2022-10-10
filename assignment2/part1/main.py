@@ -112,7 +112,7 @@ def main():
     
     # running training for one epoch
     for epoch in range(1):
-        loss = train_model(model, rank, epoch, train_loader, optimizer, criterion)
+        train_model(model, rank, epoch, train_loader, optimizer, criterion)
     # train is over
 
     # test

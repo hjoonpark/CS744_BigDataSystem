@@ -11,6 +11,7 @@ import torch.optim as optim
 import random
 import model as mdl
 import torch.distributed as dist
+from torch.utils.data.distributed import DistributedSampler
 import time
 device = "cpu"
 torch.set_num_threads(4)
@@ -38,7 +39,6 @@ def train_model(model, rank, epoch, train_loader, optimizer, criterion):
     group = dist.new_group(group_list)
     group_size = len(group_list)
 
-    file_path = os.path.abspath(os.path.dirname(__file__))
     dt = 0
     n_iter = 0
     with open(f"{log_path}", "a+") as f:
@@ -127,6 +127,9 @@ def main():
     - world_size: Number of processes participating in the job
     - rank: Rank of the current process (it should be a number between 0 and world_size-1)
     """
+    # process group
+    for group in range(0, args.num_nodes):
+        group_list.append(group)
 
     init_method = "tcp://{}:6666".format(args.master_ip)
     print("init_method: {}".format(init_method))
@@ -148,7 +151,8 @@ def main():
     
     # load train set
     train_set = datasets.CIFAR10(root="./data", train=True, download=True, transform=transform_train)
-    train_loader = torch.utils.data.DataLoader(train_set, num_workers=2, batch_size=batch_size, sampler=None, shuffle=True, pin_memory=True)
+    sampler = DistributedSampler(train_set, seed=0) if torch.distributed.is_available() else None
+    train_loader = torch.utils.data.DataLoader(train_set, num_workers=2, batch_size=batch_size, sampler=sampler, shuffle=True, pin_memory=True)
 
     # load test set
     test_set = datasets.CIFAR10(root="./data", train=False, download=True, transform=transform_test)
@@ -166,10 +170,6 @@ def main():
     print("device={}".format(device))
     print("tr={} te={} batch_size={}".format(len(train_set), len(test_set), batch_size))
 
-    # process group
-    for group in range(0, args.num_nodes):
-        group_list.append(group)
-        
     # running training for one epoch
     for epoch in range(1):
         train_model(model, rank, epoch, train_loader, optimizer, criterion)
