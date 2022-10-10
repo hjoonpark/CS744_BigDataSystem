@@ -138,12 +138,13 @@ def main():
         # we first send the gradients of the 3 nodes to the root node, average them, and then send them to the 3 nodes respectively.
         running_loss = 0
         for batch_idx, (input_data, target_data) in enumerate(train_loader):
-            t0 = time.time()
+            if rank == 0:
+                t0 = time.time()
             loss = train_model(model, epoch, input_data, target_data, optimizer, criterion, group, group_size, rank)
-            dt += (time.time()-t0)
-            n_iter += 1
+            if rank == 0:
+                dt += (time.time()-t0)
+                n_iter += 1
 
-            n_iter += 1
             running_loss += loss.item()
             if batch_idx % 20 == 19:    # print every 20 mini-batches
                 logger.print("dt={:.2f} rank={} epoch={} batch_idx={} loss={}".format(dt, rank, epoch, batch_idx, running_loss/20))
@@ -151,8 +152,9 @@ def main():
 
             if n_iter >= 40:
                 break
-    dt /= n_iter
-    logger.print("dt={} per iteration. n_iter={}".format(dt, n_iter))
+    if rank == 0:
+        dt /= n_iter
+        logger.print("dt={} per iteration. n_iter={}".format(dt, n_iter))
     # train is over
 
     # test
