@@ -21,6 +21,8 @@ torch.set_num_threads(4)
 batch_size = 256 # batch for one node
 
 def train_model(model, epoch, input_data, target_data, optimizer, criterion):
+    input_data, target_data = input_data.to(device), target_data.to(device)
+    
     optimizer.zero_grad()
     # ==================================================================================== #
     # standard way of forward + backward + optimize

@@ -38,6 +38,8 @@ def test_model(model, test_loader, criterion, logger):
     logger.print("Test average={} accuracy={}/{}={}".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
             
 def train_model(model, epoch, input_data, target_data, optimizer, criterion, group, group_size, rank):
+    input_data, target_data = input_data.to(device), target_data.to(device)
+    
     # each batch is divided into processors (nodes), and averaged gradient sent back to each node for respective back-propagation
     # we first send the gradients of the 3 nodes to the root node, average them, and then send them to the 3 nodes respectively.
     

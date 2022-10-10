@@ -38,6 +38,8 @@ def test_model(model, test_loader, criterion, logger):
     logger.print("Test average={} accuracy={}/{}={}".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
             
 def train_model(model, epoch, input_data, target_data, optimizer, criterion, group, group_size):
+    input_data, target_data = input_data.to(device), target_data.to(device)
+    
     # zero the parameter gradients
     optimizer.zero_grad()
 
