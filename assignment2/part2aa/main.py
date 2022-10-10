@@ -40,11 +40,16 @@ def train_model(model, train_loader, optimizer, criterion, epoch, rank):
     # remember to exit the train loop at end of the epoch
     start_time = time.time()
     log_iter_start_time = time.time()
+    dt = 0
+    n_iters = 0
     with open(f'{log_file_name}', 'a+') as f:
         for batch_idx, (data, target) in enumerate(train_loader):
             batch_count = batch_idx + 1
             if batch_idx >= stop_iter:
                 break
+
+            if rank == 0:
+                t0 = time.time()
             # Reference: https://github.com/pytorch/examples/blob/master/mnist/main.py
             data, target = data.to(device), target.to(device)
             optimizer.zero_grad()
@@ -72,17 +77,24 @@ def train_model(model, train_loader, optimizer, criterion, epoch, rank):
                 
             optimizer.step()
 
+            if rank == 0:
+                dt += time.time()-t0
+                n_iters += 1
             # logging
-            elapsed_time = time.time() - start_time
-            f.write(f"{epoch},{batch_count},{elapsed_time}\n")
-            start_time = time.time()
+            # elapsed_time = time.time() - start_time
+            # f.write(f"{epoch},{batch_count},{elapsed_time}\n")
+            # start_time = time.time()
 
-            if (batch_count % log_iter == 0):
-                log_iter_elapsed_time = time.time() - log_iter_start_time
-                print('Train Epoch: {} \t Iteration: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\t elapsed time: {:.3f}'.format(
-                    epoch, batch_count, batch_count * len(data) * group_size, len(train_loader.dataset),
-                    100. * batch_count / len(train_loader), loss.item(), log_iter_elapsed_time)) 
-                log_iter_start_time = time.time()
+            # if (batch_count % log_iter == 0):
+            #     log_iter_elapsed_time = time.time() - log_iter_start_time
+            #     print('Train Epoch: {} \t Iteration: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\t elapsed time: {:.3f}'.format(
+            #         epoch, batch_count, batch_count * len(data) * group_size, len(train_loader.dataset),
+            #         100. * batch_count / len(train_loader), loss.item(), log_iter_elapsed_time)) 
+            #     log_iter_start_time = time.time()
+        
+        if rank == 0:
+            dt /= n_iter
+            f.write("dt={} per iteration. n_iter={}\n".format(dt, n_iter))
     return None
 
 def test_model(model, test_loader, criterion):
