@@ -129,14 +129,16 @@ def main():
     group_size = args.num_nodes
 
     # running training for one epoch
-    t0 = time.time()
+    dt = 0
     n_iter = 0
     for epoch in range(1):
         running_loss = 0
         for batch_idx, (input_data, target_data) in enumerate(train_loader):
+            t0 = time.time()
             loss = train_model(model, epoch, input_data, target_data, optimizer, criterion, group, group_size)
-
+            dt += (t0-time.time())
             n_iter += 1
+
             running_loss += loss.item()
             if batch_idx % 20 == 19:    # print every 20 mini-batches
                 logger.print("rank={} epoch={} batch_idx={} loss={}".format(rank, epoch, batch_idx, running_loss/20))
@@ -144,8 +146,8 @@ def main():
 
             if n_iter >= 40:
                 break
-    dt = time.time()-t0
-    logger.print("dt={} n_iter={}".format(dt, n_iter))
+    dt /= n_iter
+    logger.print("dt={} per iteration. n_iter={}".format(dt, n_iter))
     # train is over
 
     # test

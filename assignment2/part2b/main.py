@@ -131,14 +131,17 @@ def main():
     group_size = args.num_nodes
 
     # running training for one epoch
-    t0 = time.time()
+    dt = 0
     n_iter = 0
     for epoch in range(1):
         # each batch is divided into processors (nodes), and averaged gradient sent back to each node for respective back-propagation
         # we first send the gradients of the 3 nodes to the root node, average them, and then send them to the 3 nodes respectively.
         running_loss = 0
         for batch_idx, (input_data, target_data) in enumerate(train_loader):
+            t0 = time.time()
             loss = train_model(model, epoch, input_data, target_data, optimizer, criterion, group, group_size, rank)
+            dt += (t0-time.time())
+            n_iter += 1
 
             n_iter += 1
             running_loss += loss.item()
@@ -148,7 +151,7 @@ def main():
 
             if n_iter >= 40:
                 break
-    dt = time.time()-t0
+    dt /= n_iter
     logger.print("dt={} n_iter={}".format(dt, n_iter))
     # train is over
 
