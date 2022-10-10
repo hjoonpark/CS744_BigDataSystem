@@ -36,7 +36,9 @@ def test_model(model, test_loader, criterion):
         print("Test average={} accuracy={}/{}={}\n".format(test_loss, correct, len(test_loader.dataset), 100*correct/len(test_loader.dataset)))
 
 def train_model(model, rank, epoch, train_loader, optimizer, criterion):
-    file_path = os.path.abspath(os.path.dirname(__file__))
+    group = dist.new_group(group_list)
+    group_size = len(group_list)
+
     dt = 0
     n_iter = 0
     with open(f"{log_path}", "a+") as f:

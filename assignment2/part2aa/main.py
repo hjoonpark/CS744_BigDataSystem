@@ -41,7 +41,7 @@ def train_model(model, train_loader, optimizer, criterion, epoch, rank):
     start_time = time.time()
     log_iter_start_time = time.time()
     dt = 0
-    n_iters = 0
+    n_iter = 0
     with open(f'{log_file_name}', 'a+') as f:
         for batch_idx, (data, target) in enumerate(train_loader):
             batch_count = batch_idx + 1
@@ -79,7 +79,7 @@ def train_model(model, train_loader, optimizer, criterion, epoch, rank):
 
             if rank == 0:
                 dt += time.time()-t0
-                n_iters += 1
+                n_iter += 1
             # logging
             # elapsed_time = time.time() - start_time
             # f.write(f"{epoch},{batch_count},{elapsed_time}\n")
