@@ -43,7 +43,7 @@ def train_model(model, rank, epoch, train_loader, optimizer, criterion):
     with open(f"{log_path}", "a+") as f:
         running_loss = 0
         for batch_idx, (input_data, target_data) in enumerate(train_loader):
-            if rank == 0:
+            if rank == 0 and n_iter > 0:
                 t0 = time.time()
 
             # ----- timing starts ---------------------------------------------------- #
@@ -55,9 +55,9 @@ def train_model(model, rank, epoch, train_loader, optimizer, criterion):
             optimizer.step()
             # ----- timing starts ---------------------------------------------------- #
 
-            if rank == 0:
+            n_iter += 1
+            if rank == 0 and n_iter > 0:
                 dt += (time.time()-t0)
-                n_iter += 1
                 
                 running_loss += loss.item()
                 if batch_idx % 20 == 19:    # print every 20 mini-batches
