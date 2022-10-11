@@ -71,6 +71,7 @@ def train_model(model, rank, epoch, train_loader, optimizer, criterion):
             f.write("dt={} per iteration. n_iter={}\n".format(dt, n_iter))
 
 def main():
+    global log_path
     # python main.py --master-ip $ip_address$ --num-nodes 4 --rank $rank$
     parser = argparse.ArgumentParser(description='Distributed PyTorch Training')
     parser.add_argument('--master-ip', default='10.10.1.1', type=str, metavar='N',help='manual ip number', dest='master_ip')
