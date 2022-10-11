@@ -59,28 +59,21 @@ def train_model(model, rank, epoch, train_loader, optimizer, criterion):
             if rank == 0:
                 # current node is root
                 for param_idx, params in enumerate(model.parameters()):
-                    T0 = time.time()
                     # list to hold gradient from each of the nodes
                     grads_from_nodes = [torch.zeros_like(params.grad) for _ in range(group_size)]
-                    T1 = time.time()
 
                     # Gathers a list of tensors in a single process: gather gradients from other nodes
                     dist.gather(params.grad, grads_from_nodes, group=group, async_op=False)
-                    T2 = time.time()
 
                     # average the gradients
                     grad_sum = torch.zeros_like(params.grad)
                     for i in range(group_size):
                         grad_sum += grads_from_nodes[i]
                     grad_mean = grad_sum / group_size
-                    T3 = time.time()
                 
                     # Scatters a list of tensors to all processes in a group: scatter back to nodes
                     scatter_list = [grad_mean] * group_size
-                    T4 = time.time()
                     dist.scatter(params.grad, scatter_list, group=group, src=0, async_op=False)
-                    T5 = time.time()
-                    f.write("[{}] {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}\n".format(param_idx, T1-T0, T2-T1, T3-T2, T4-T3, T5-T4))
             else:
                 # current node is one of the workers
                 # The worker node first sends its gradient to the root node, and then receives the averaged gradient calculated by the root node.
@@ -97,10 +90,10 @@ def train_model(model, rank, epoch, train_loader, optimizer, criterion):
                 dt += (time.time()-t0)
                 n_iter += 1
                 
-                # running_loss += loss.item()
-                # if batch_idx % 20 == 19:    # print every 20 mini-batches
-                #     f.write("dt={:.2f} rank={} epoch={} batch_idx={} loss={}\n".format(dt, rank, epoch, batch_idx, running_loss/20))
-                #     running_loss = 0.0
+                running_loss += loss.item()
+                if batch_idx % 20 == 19:    # print every 20 mini-batches
+                    f.write("dt={:.2f} rank={} epoch={} batch_idx={} loss={}\n".format(dt, rank, epoch, batch_idx, running_loss/20))
+                    running_loss = 0.0
 
             if n_iter >= 40:
                 break
