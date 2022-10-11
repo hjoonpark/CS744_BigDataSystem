@@ -99,7 +99,7 @@ def train_model(model, rank, epoch, train_loader, optimizer, criterion):
                 break
         if rank == 0:
             dt /= (n_iter-1)
-            f.write("dt={} per iteration. n_iter={}\n".format(dt, n_iter))
+            f.write("dt={} per iteration. n_iter={}\n".format(dt, (n_iter-1)))
 
 def main():
     global log_path
