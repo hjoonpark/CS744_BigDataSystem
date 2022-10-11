@@ -138,7 +138,7 @@ def main():
         group_list.append(group)
     
     # divide up the batch size for distributed computations: nn.DistributedSampler
-    batch_size = 256 / args.num_nodes
+    batch_size = 256 // args.num_nodes
     
     init_method = "tcp://{}:6666".format(args.master_ip)
     print("init_method: {}".format(init_method))
