@@ -119,6 +119,7 @@ def main():
             normalize])
     
     # load train set
+    batch_size = batch_size / args.num_nodes
     train_set = datasets.CIFAR10(root="./data", train=True, download=True, transform=transform_train)
     sampler = DistributedSampler(train_set, seed=0) if torch.distributed.is_available() else None
     train_loader = torch.utils.data.DataLoader(train_set, num_workers=2, batch_size=batch_size, sampler=sampler, pin_memory=True)

@@ -137,7 +137,10 @@ def main():
     # process group
     for group in range(0, args.num_nodes):
         group_list.append(group)
-
+    
+    # divide up the batch size for distributed computations: nn.DistributedSampler
+    batch_size = batch_size / args.num_nodes
+    
     init_method = "tcp://{}:6666".format(args.master_ip)
     print("init_method: {}".format(init_method))
     dist.init_process_group(backend="gloo", init_method=init_method, world_size=args.num_nodes, rank=args.rank)
