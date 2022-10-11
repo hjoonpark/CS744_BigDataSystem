@@ -110,7 +110,7 @@ def train_model(model, rank, epoch, train_loader, optimizer, criterion):
             f.write("dt={} per iteration. n_iter={}\n".format(dt, n_iter))
 
 def main():
-    global group, group_size, log_path
+    global log_path
     parser = argparse.ArgumentParser(description='Distributed PyTorch Training')
     parser.add_argument('--master-ip', default='10.10.1.1', type=str, metavar='N',help='manual ip number', dest='master_ip')
     parser.add_argument('--num-nodes', default=4, type=int, help='number of nodes for distributed training', dest='num_nodes')
