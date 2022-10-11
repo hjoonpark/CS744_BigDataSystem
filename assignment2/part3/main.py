@@ -17,8 +17,7 @@ import time
 
 device = "cpu"
 torch.set_num_threads(4)
-
-
+group_list = []
 def test_model(model, test_loader, criterion):
     model.eval()
     test_loss = 0
