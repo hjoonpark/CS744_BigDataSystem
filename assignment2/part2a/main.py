@@ -86,7 +86,6 @@ def train_model(model, rank, epoch, train_loader, optimizer, criterion):
             optimizer.step()
             # ----- timing end ---------------------------------------------------- #
 
-            n_iter += 1
             if rank == 0 and n_iter > 0:
                 dt += (time.time()-t0)
                 
@@ -95,10 +94,11 @@ def train_model(model, rank, epoch, train_loader, optimizer, criterion):
                     f.write("dt={:.2f} rank={} epoch={} batch_idx={} loss={}\n".format(dt, rank, epoch, batch_idx, running_loss/20))
                     running_loss = 0.0
 
+            n_iter += 1
             if n_iter >= 40:
                 break
         if rank == 0:
-            dt /= n_iter
+            dt /= (n_iter-1)
             f.write("dt={} per iteration. n_iter={}\n".format(dt, n_iter))
 
 def main():
