@@ -17,7 +17,6 @@ device = "cpu"
 torch.set_num_threads(4)
 
 group_list = []
-batch_size = 256 # batch for one node
 
 def test_model(model, test_loader, criterion):
     model.eval()
@@ -139,7 +138,7 @@ def main():
         group_list.append(group)
     
     # divide up the batch size for distributed computations: nn.DistributedSampler
-    batch_size = batch_size / args.num_nodes
+    batch_size = 256 / args.num_nodes
     
     init_method = "tcp://{}:6666".format(args.master_ip)
     print("init_method: {}".format(init_method))

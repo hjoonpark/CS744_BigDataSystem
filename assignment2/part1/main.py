@@ -76,6 +76,7 @@ def main():
     args = parser.parse_args()
 
     rank = args.rank
+    batch_size = 256
     
     file_path = os.path.abspath(os.path.dirname(__file__))
     save_dir = os.path.join(file_path, "..", "output")
